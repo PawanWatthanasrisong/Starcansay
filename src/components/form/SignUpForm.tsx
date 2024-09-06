@@ -17,11 +17,12 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { toast } from "@/components/hooks/use-toast"
+import { useToast } from "@/components/hooks/use-toast"
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 const FormSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
   email: z.string().min(1, 'Email is required').email('Invalid email'),
   password: z
   .string()
@@ -37,10 +38,12 @@ const FormSchema = z.object({
 });
 
 export default function SignUpForm() {
+  const { toast } = useToast();
   const router = useRouter();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
+      name: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -54,25 +57,51 @@ export default function SignUpForm() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
+        name: values.name,
         email: values.email,
         password: values.password
       })
     })
 
+    console.log(response);
+
     if(response.ok) {
+      toast({
+        title: "Sign-up Succesfully!",
+        className: "bg-green-500 text-white",
+      })
       router.push('/sign-in')
     } else {
-      console.error('Registration failed');
+      toast({
+        title: "Cannot Sign up!",
+        description: "You have registered with this Email, Try Sign-in or Sign-in with Google",
+        variant: 'destructive'
+      })
+      console.log('Registration failed');
     }
   }
 
   return (
-    <div>
-      <h2 className="text-center text-3xl font-bold leading-9 tracking-tight text-gray-900">
+    <div className='bg-white border-[20px] rounded-lg border-white shadow-lg sm:max-w-sm'>
+      <img src='images/starcansaylogo-31.png' width='400px'/>
+      <h2 className="text-center text-3xl font-bold leading-9 tracking-tight text-gray-900 -mt-5">
           Sign Up
       </h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="mt-5 space-y-5">
+        <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Display Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter Your Name" type='name' {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+            />
             <FormField
             control={form.control}
             name="email"

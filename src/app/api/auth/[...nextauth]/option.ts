@@ -4,8 +4,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { compare } from "bcrypt";
+import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
+
 
 export const options: NextAuthOptions = {
     adapter: PrismaAdapter(prisma),
@@ -26,7 +28,6 @@ export const options: NextAuthOptions = {
           async authorize(credentials) {
             console.log('here');
             if(!credentials?.email || !credentials?.password) {
-                console.log('No Email Password');
                 return null;
             }
 
@@ -34,27 +35,39 @@ export const options: NextAuthOptions = {
                 where: { email: credentials?.email }
             });
             if(!existingUser){
-                console.log('No Email');
-                return null;
+                throw new Error('CrednetialsSignin');
             }
+
+            if(!existingUser.password){
+                throw new Error('NoPasswordForCredentials')
+            } 
 
             const passwordMatch = await compare(credentials.password, existingUser.password);
             if(!passwordMatch) {
-                console.log('Wrong Password');
                 return null;
             }
-
             console.log('Correct Credentials');
             return {
-                id: existingUser.id,
-                email: existingUser.email
+            id: existingUser.id,
+            email: existingUser.email,
+            name: existingUser.name
             }
           }
+        }),
+        GoogleProvider ({
+            clientId: process.env.GOOGLE_ID!,
+            clientSecret: process.env.GOOGLE_SECRET!,
+            authorization: {
+                params: {
+                  prompt: "consent",
+                  access_type: "offline",
+                  response_type: "code"
+                }
+            },
         })
       ],
       callbacks: {
         async jwt({ token, user}){
-            console.log('jwt callback', { token , user});
             if(user){
                 return {
                     ...token,
@@ -64,7 +77,6 @@ export const options: NextAuthOptions = {
             return token
         },
         async session({ session, user, token}) {
-            console.log('session callback', { session , user, token});
             return {
                 ...session,
                 user: {
@@ -72,7 +84,18 @@ export const options: NextAuthOptions = {
                     email: token.email
                 }
             }
-            return session
-        }        
+        },
+        async signIn({ account, profile, user }) {
+            console.log(account,user)
+            if (account?.provider === 'google') {
+              const existingUser = await prisma.user.findUnique({
+                where: {email: user.email}
+              });
+              if ((existingUser && (existingUser.password !== null))) {
+                throw new Error('OAuthAccountNotLinked'); // Custom error for mismatched provider
+              }
+            }
+            return true;
+          },
       }
 }

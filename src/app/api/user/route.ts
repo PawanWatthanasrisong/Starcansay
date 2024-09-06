@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import * as z from 'zod'
 
 const userSchema = z.object({
+    name: z.string().min(1, 'Name is required'),
     email: z.string().min(1, 'Email is required').email('Invalid email'),
     password: z
     .string()
@@ -17,7 +18,7 @@ const userSchema = z.object({
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { email, password } = userSchema.parse(body);
+        const { name, email, password } = userSchema.parse(body);
 
         //Check if email already exists
         const existingUserByEmail = await prisma.user.findUnique({
@@ -30,6 +31,7 @@ export async function POST(req: Request) {
         const hashedPassword = await hash(password, 10);
         const newUser = await prisma.user.create({
             data: {
+                name,
                 email,
                 password: hashedPassword
             } as Prisma.UserCreateInput     
@@ -39,6 +41,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ user: rest, message: "User created successfully"}, {status: 201});
     
     } catch(error){
+        console.log(error);
         return NextResponse.json({ message: "Something went wrong!"}, {status: 500});
     }
 }

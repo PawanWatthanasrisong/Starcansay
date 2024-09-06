@@ -17,9 +17,10 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { toast } from "@/components/hooks/use-toast"
 import Link from 'next/link';
 import GoogleSignInButton from '../ui/GoogleSignInButton';
+import { useToast } from '@/components/hooks/use-toast';
+import GoogleSignInError from '../ui/GoogleSignInError';
 
 const FormSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email'),
@@ -30,6 +31,7 @@ const FormSchema = z.object({
 })
 
 export default function SignInForm() {
+  const { toast } = useToast();
   const router = useRouter();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -46,18 +48,55 @@ export default function SignInForm() {
       redirect: false,
     });
     console.log(values);
-    console.log(signInData);
+    console.log(signInData?.error === 'NoPasswordForCredentials');
     
-    if(signInData?.error){
-      console.log(signInData.error);
-    } else {
-      router.push('/dashboard');
+    switch(signInData?.error){
+      case 'CredentialsSignin':
+        toast({
+          title: "Login Failed",
+          description: "Invalid email or password. Please try again",
+          variant: 'destructive'
+        })
+        break;
+      case 'NoPasswordForCredentials':
+        toast({
+          title: 'Login failed',
+          description: 'This email is linked to another sign-in provider. Please use the correct provider.',
+          variant: 'destructive'
+        })
+        break;
+      case 'OAuthAccountNotLinked':
+        toast({
+          title: 'Login failed',
+          description: 'This email is linked to another sign-in provider. Please use the correct provider.',
+          variant: 'destructive'
+        })
+        break;
+      case null:
+        toast({
+          title: "Verified",
+          description: "Login Succesfully",
+          className: "bg-green-500 text-white",
+        })
+        router.push('/dashboard');
+        router.refresh();
+        break;
+      default :
+        toast({
+          title: "Error",
+          description: "Oops! Something went wrong!",
+          variant: 'destructive'
+        })
+        break;
     }
   }
 
   return (
-    <div>
-      <h2 className="text-center text-3xl font-bold leading-9 tracking-tight text-gray-900">
+    <div className='bg-white border-[20px] rounded-lg border-white shadow-lg sm:max-w-sm'>
+      <div className='flex justify-center'>
+        <img src='images/starcansaylogo-31.png' width='400px'/>
+      </div>
+      <h2 className="text-center text-3xl font-bold leading-9 tracking-tight text-gray-900 -mt-5">
           Sign in to your account
       </h2>
       <Form {...form}>
@@ -71,7 +110,7 @@ export default function SignInForm() {
                 <FormControl>
                   <Input placeholder="mail@example.com" type='email' {...field} />
                 </FormControl>
-                <FormMessage />
+                <FormMessage/>
               </FormItem>
             )}
             />
@@ -91,9 +130,11 @@ export default function SignInForm() {
             <p className='text-xs'>Don't have an account?
               <Link href='/sign-up' className='mx-2 text-pink-600 hover:text-pink-300 underline'>Sign up</Link>
             </p>
-            <div className='flex justify-center'>
+            <div>
               <Button type="submit" className='w-full'>
-                Sign in
+                  <span>
+                    Sign in
+                  </span>
               </Button>
             </div>
         </form>
@@ -102,14 +143,15 @@ export default function SignInForm() {
     {/* Divider */}
     <div className="flex py-5 items-center w-full sm:max-w-sm">
                 <div className="flex-grow border-t border-gray-400"></div>
-                <span className="flex-shrink mx-3 text-gray-900">Or</span>
+                <span className="flex-shrink mx-1 text-gray-900">Or</span>
                 <div className="flex-grow border-t border-gray-400"></div>
     </div>
     <GoogleSignInButton>
       <img src='/images/Google_Icons-09-512.webp' alt='google-logo' width='25px'/>
       Sign in with google
     </GoogleSignInButton>
+    <GoogleSignInError/>
   </div>
-    
   )
 }
+

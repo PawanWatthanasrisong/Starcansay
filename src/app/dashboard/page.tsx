@@ -1,18 +1,23 @@
-import { getServerSession, Session } from 'next-auth';
-import React from 'react'
+import { getServerSession } from 'next-auth';
+import React from 'react';
 import { options } from '../api/auth/[...nextauth]/option';
+import { redirect} from 'next/navigation';
+import SignInSuccessToast from '@/components/ui/SignInSuccessToast';
 
-export default async function page() {
+export default async function Page() {
   const session = await getServerSession(options);
-  console.log(session);
-  return (
-    <div>
+
+  if (!session){
+    redirect('/sign-in');
+  }
+
+    return (
+      <div className='min-h-screen flex flex-col justify-center items-center'>
         <div className='mt-10'>
-          Hi
+          Hi {session?.user?.name}!!
         </div>
-        <div>
-          Hi
-        </div>
-    </div>
-  )
-}
+        <SignInSuccessToast />
+      </div>
+    )
+  }
+
