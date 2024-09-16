@@ -3,6 +3,7 @@ import React from 'react';
 import { options } from '../api/auth/[...nextauth]/option';
 import { redirect} from 'next/navigation';
 import SignInSuccessToast from '@/components/ui/SignInSuccessToast';
+import LineGraph from '@/components/graph/LineGraph';
 
 export default async function Page() {
   const session = await getServerSession(options);
