@@ -21,9 +21,7 @@ export default function page() {
     <div className='mt-20 flex flex-col justify-center items-center w-full'>
         <img src='images/starcansaylogo-31.png' width='400px'/>
         <LineGraph onPointData={handlePointData} onGraphData={handleGraphData}/>
-
         <GraphReadBox handlePointData={pointData} handleGraphData={graphData}/>
-        
     </div>
   )
 }

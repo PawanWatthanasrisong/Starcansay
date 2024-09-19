@@ -21,6 +21,7 @@ export  async function  GET(req: Request, res: NextApiResponse) {
         const series2 = jsonData.map((row: any) => row[2]).slice(1,);
         let series3 = jsonData.map((row: any) => row[3]).slice(1,);
 
+
         const movingAverage = (data: any, windowSize: number) => {
             const result = [];
             for (let i = 0; i < data.length; i++){
@@ -36,15 +37,48 @@ export  async function  GET(req: Request, res: NextApiResponse) {
             }
             return result;
         }
+
+        const getSlope = (data: any) => {
+            const firstDerivative = [];
+            for(let i = 0; i < data.length; i++){
+                let j = i;
+                let k = i;
+                let slope;
+                let dy;
+                do {
+                    while ((!data[j + 1] || slope === 0) && (j + 1) < data.length){
+                        j++;
+                        dy = data[j] - data[k];
+                        slope = dy;
+                    }
+
+                    if ((!data[k] || slope === 0 || slope === null)  && (k - 1) > 0){
+                        k--;
+                    }
+                    dy = data[j] - data[k];
+                    slope = dy;
+                } while(slope === 0);
+                
+                firstDerivative.push({ x: i, slope});
+            }
+            return firstDerivative;
+        }
+
+        const slopeSeries1 = getSlope(series1);
+        const slopeSeries2 = getSlope(series2);
         
         series3 = movingAverage(series3, 1);
+        const slopeSeries3 = getSlope(series3);
 
 
         return NextResponse.json({
             xAxis,
             series1,
             series2,
-            series3
+            series3,
+            slopeSeries1,
+            slopeSeries2,
+            slopeSeries3,
         })
 
     } catch(error){

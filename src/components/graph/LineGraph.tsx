@@ -81,7 +81,8 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
         series3: result.series3[index],
       }));
       setChartData(formattedData);
-      onGraphData(formattedData);
+      onGraphData(result);
+      console.log(result);
     };
 
     fetchData();
