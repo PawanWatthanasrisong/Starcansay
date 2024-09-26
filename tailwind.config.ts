@@ -1,13 +1,19 @@
+import {nextui} from '@nextui-org/theme';
 import type { Config } from "tailwindcss";
 
 const config: Config = {
     darkMode: ["class"],
-    content: [
+  content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./node_modules/@nextui-org/theme/dist/components/[object Object].js"
   ],
   theme: {
+	fontFamily: {
+		'inter': ['inter'],
+		'body': ['mali'],
+	},
   	extend: {
   		backgroundImage: {
   			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
@@ -19,6 +25,17 @@ const config: Config = {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
+			starcansaypink:{
+				light: '#E5CDD7',
+				DEFAULT: '#F4AACA'
+			},
+			starcansaywhite:{
+				DEFAULT: ''
+			},
+
+			starcansayblue:{
+				DEFAULT: '#4E6AB3',
+			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -62,6 +79,5 @@ const config: Config = {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
 };
 export default config;

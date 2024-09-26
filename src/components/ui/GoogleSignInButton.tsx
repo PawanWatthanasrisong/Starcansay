@@ -21,7 +21,7 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({children}) => {
       setIsLoading(true);
       console.log(`sign in with google`)
       const signInData = await signIn('google', {
-        callbackUrl: 'http://localhost:3000/dashboard?login=success',
+        callbackUrl: 'http://localhost:3000/graph?login=success',
       });
       console.log(signInData);
     } catch(error){
@@ -35,7 +35,7 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({children}) => {
 
 
   return (
-    <Button disabled={isLoading} onClick={loginWithGogogle} className='w-full'>
+    <Button disabled={isLoading} onClick={loginWithGogogle} className='w-80 h-16 bg-starcansaypink text-2xl font-bold rounded-2xl hover:bg-starcansaypink-light'>
       {children}
     </Button>
   )

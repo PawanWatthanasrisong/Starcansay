@@ -1,12 +1,17 @@
 
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Kanit } from "next/font/google";
 import "./globals.css";
 import ClientWrapper from "./_app";
 import Navbar from "@/components/ui/Navbar";
 import { Toaster } from "@/components/ui/toaster";
 
+
 const inter = Inter({ subsets: ["latin"] });
+const kanit = Kanit({ 
+  weight: '400',
+  subsets: ['thai'],
+})
 
 export const metadata: Metadata = {
   title: "Create Next App",

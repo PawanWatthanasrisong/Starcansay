@@ -3,6 +3,10 @@ import { useEffect, useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { Button } from '../ui/button';
 import { FileX } from 'lucide-react';
+import ChallengeStar from '../box/helpers/ChallengeStarFunction';
+import LuckStar from '../box/helpers/LuckStarFunction';
+import LifeStar from '../box/helpers/LifeStarFunction';
+
 
 interface LineGraphProps {
   onPointData: (data:any) => void;
@@ -18,8 +22,14 @@ export default function LineGraph ({ onPointData, onGraphData }: LineGraphProps)
   const [tooltipData, setTooltipData] = useState<any>(null);
   const [isClicked, setIsClicked] = useState<boolean>(false);
   const [isActive, setIsActive] = useState<boolean>(false);
+  const [width, setWidth] = useState<number>(0);
+  const [graphData, setGraphData] = useState<string>('');
+  const [graphHeight, setGraphHeight] = useState<number>(300);
+  const [graphWidth, setGraphWidth] = useState<string>('90%');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const handleClick = (data: any) => {
+      console.log(`data`,data);
       if(data.activeTooltipIndex){
         setTooltipData(data);
         setIsClicked(true);
@@ -46,6 +56,22 @@ export default function LineGraph ({ onPointData, onGraphData }: LineGraphProps)
     setIsClicked(false);  // Allow hovering again
   };
 
+  const entrySwitch = (name: string, age: number) => {
+    let result;
+    switch (name) {
+      case 'ดาวชีวิต' :
+        result = LifeStar(graphData, age).wording;
+        break;
+      case 'ดาวโชค' :
+        result = LuckStar(graphData, age).wording;
+        break;
+      case 'ดาวท้าทาย' :
+        result = ChallengeStar(graphData, age).wording;
+        break;
+    }
+    return result;  
+  }
+
 
 // Custom Tooltip component
 const CustomTooltip = ({ payload }: { payload: any }) => {
@@ -57,7 +83,7 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
         <ul className="list">
           {payload.map((entry:any, index:any) => (
             <li key={`item-${index}`} style={{ color: entry.color }}>
-              {`${entry.name}: ${entry.value}`}
+              {`${entry.name}: ${entrySwitch(entry.name, payload[0].payload.age)}`}
             </li>
           ))}
         </ul>
@@ -71,8 +97,16 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch('/api/chartData');
+      setIsLoading(true);
+      const response = await fetch('/api/chartData', {
+        method: 'GET'
+      });
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      }
+      console.log(JSON.stringify(response));
       const result = await response.json();
+      console.log(result);
       //Format data for Recahrts
       const formattedData = result.xAxis.map((x:any, index: number) => ({
         age: x,
@@ -80,22 +114,46 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
         series2: result.series2[index],
         series3: result.series3[index],
       }));
+      console.log(formattedData);
       setChartData(formattedData);
+      setGraphData(result);
       onGraphData(result);
-      console.log(result);
+      setIsLoading(false);
     };
-
     fetchData();
-
-    
   },[]);
 
+  useEffect(() => {
+    setWidth(window.innerWidth);
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+    
+  }, []);
+
+  useEffect(() => {
+    if (width >= 768){
+      setGraphHeight(300);
+      setGraphWidth('90%');
+    } else {
+      setGraphHeight(200);
+      setGraphWidth('100%');
+    }
+  },[width])
+
+  if (isLoading) {
+    return  (
+      <div className="flex justify-center items-center w-full">
+        กำลังโหลดรอแปปนึงนะะ :D
+      </div>
+    );
+  }
 
   return (
     <div>
       {chartData.length > 0 && (
-        <div className='w-screen flex flex-col justify-center items-center '>
-          <ResponsiveContainer width='70%' height={300} >
+        <div className='w-full flex flex-col justify-center items-center text-sm sm:text-lg'>
+          <ResponsiveContainer width={graphWidth} height={graphHeight} className='mr-5'>
             <LineChart data={chartData} onMouseLeave={handleMouseLeave} onClick={handleClick} onMouseMove={handleMouseEnter}>
               <CartesianGrid strokeDasharray="4 4" />
               <XAxis type='number' dataKey='age' name='อายุ' tickMargin={10} tickCount={11} domain={[0,100]} unit='ปี'/>
@@ -109,7 +167,7 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
                 dataKey="series1" 
                 stroke="#8884d8" 
                 strokeWidth='2px' 
-                name='ชีวิต เต็มที่' 
+                name='ดาวชีวิต' 
                 dot={false} 
                 hide={!activeSeries1} 
                 isAnimationActive={false} 
@@ -120,7 +178,7 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
                 dataKey="series2" 
                 stroke="#82ca9d" 
                 strokeWidth='2px' 
-                name='โชคลาภ สำเร็จ' 
+                name='ดาวโชค' 
                 dot={false} 
                 hide={!activeSeries2} 
                 isAnimationActive={false} 
@@ -131,7 +189,7 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
                 dataKey="series3" 
                 stroke="#ca828b" 
                 strokeWidth='2px' 
-                name='เข้มข้น ท้าทาย' 
+                name='ดาวท้าทาย' 
                 dot={false} 
                 hide={!activeSeries3} 
                 isAnimationActive={false} 
@@ -140,23 +198,23 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
             </LineChart>
           </ResponsiveContainer>
           <div className='mt-5'>
-            <Button className={`hover:bg-violet-400 ${activeSeries1 ? 'bg-purple-500': 'bg-gray-400'} `} onClick={() => setActiveSeries1(!activeSeries1)}>
-            <svg className="w-4 h-4 mr-2" fill="white" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="6" />
-            </svg>
-              ชีวิต เต็มที่
+            <Button className={`w-fit hover:bg-violet-400 ${activeSeries1 ? 'bg-purple-500': 'bg-gray-400'}  text-xs sm:text-sm `} onClick={() => setActiveSeries1(!activeSeries1)}>
+              <svg className="w-2 h-2 sm:w-4 sm:h-4 mr-1" fill="white" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="6" />
+              </svg>
+                ดาวชีวิต
             </Button>
-            <Button className={`hover:bg-green-400 ${activeSeries2 ? 'bg-green-500': 'bg-gray-400'} mx-10`} onClick={() => setActiveSeries2(!activeSeries2)}>
-            <svg className="w-4 h-4 mr-2" fill="white" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="6" />
-            </svg>
-              โชคลาภ สำเร็จ
+            <Button className={`w-fit hover:bg-green-400 ${activeSeries2 ? 'bg-green-500': 'bg-gray-400'} mx-5 sm:mx-10 text-xs sm:text-sm`} onClick={() => setActiveSeries2(!activeSeries2)}>
+              <svg className="w-2 h-2 sm:w-4 sm:h-4 mr-1" fill="white" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="6" />
+              </svg>
+                ดาวโชค
             </Button>
-            <Button className={`hover:bg-red-400 ${activeSeries3 ? 'bg-red-500': 'bg-gray-400'}`} onClick={() => setActiveSeries3(!activeSeries3)}>
-            <svg className="w-4 h-4 mr-2" fill="white" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="6" />
-            </svg>
-              เข้มข้น ท้าทาย
+            <Button className={`w-fit hover:bg-red-400 ${activeSeries3 ? 'bg-red-500': 'bg-gray-400'} text-xs sm:text-sm`} onClick={() => setActiveSeries3(!activeSeries3)}>
+              <svg className="w-2 h-2 sm:w-4 sm:h-4 mr-1" fill="white" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="6" />
+              </svg>
+                ดาวท้าทาย
             </Button>
           </div>
         </div>
