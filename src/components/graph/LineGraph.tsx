@@ -157,7 +157,7 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
             <LineChart data={chartData} onMouseLeave={handleMouseLeave} onClick={handleClick} onMouseMove={handleMouseEnter}>
               <CartesianGrid strokeDasharray="4 4" />
               <XAxis type='number' dataKey='age' name='อายุ' tickMargin={10} tickCount={11} domain={[0,100]} unit='ปี'/>
-              <YAxis type='number' tickMargin={10} domain={[-100,100]} />
+              <YAxis type='number' tickMargin={10} domain={[-100,100]} hide={true} />
               <Tooltip content={<CustomTooltip payload={tooltipData} />} active={isActive}/>
               <Legend />
               <ReferenceLine y="0" stroke="black" opacity='50%'/>
