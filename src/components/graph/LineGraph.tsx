@@ -11,9 +11,10 @@ import LifeStar from '../box/helpers/LifeStarFunction';
 interface LineGraphProps {
   onPointData: (data:any) => void;
   onGraphData: (data:any) => void;
+  handlePointData: any
 }
 
-export default function LineGraph ({ onPointData, onGraphData }: LineGraphProps) {
+export default function LineGraph ({ onPointData, onGraphData, handlePointData }: LineGraphProps) {
 
   const [chartData, setChartData] = useState<any[]>([]);
   const [activeSeries1, setActiveSeries1] = useState<boolean>(true);
@@ -31,9 +32,10 @@ export default function LineGraph ({ onPointData, onGraphData }: LineGraphProps)
   const handleClick = (data: any) => {
       console.log(`data`,data);
       if(data.activeTooltipIndex){
+        console.log(data.activeTooltipIndex);
         setTooltipData(data);
         setIsClicked(true);
-        onPointData(data);
+        onPointData(data.activeTooltipIndex);
       }
   }
 
@@ -140,6 +142,14 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
       setGraphWidth('100%');
     }
   },[width])
+
+  useEffect(() => {
+    let pointData = {
+      activeTooltipIndex: handlePointData
+    }
+    console.log('pointdata', pointData)
+    handleClick(pointData);
+  },[handlePointData]);
 
   if (isLoading) {
     return  (

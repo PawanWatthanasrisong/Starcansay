@@ -16,31 +16,31 @@ export default function AgeDropDown({ handlePointData, onPointData}: AgeDropDown
   const [age, setAge] = useState('25');
 
   useEffect(() => {
-    setAge(handlePointData);
+    console.log(handlePointData);
+    handleAgeChange(handlePointData);
   },[handlePointData])
+
+  const handleAgeChange = (newAge: string) => {
+    setAge(newAge);
+    onPointData(newAge);
+  }
 
   return (
     <div className='flex items-center'>
-        <div>
-            ณ อายุ {handlePointData}
-        </div>
-      <Select onValueChange={setAge}>
+      <Select onValueChange={handleAgeChange} value={age}>
         <SelectTrigger className="w-fit">
             <SelectValue placeholder="25" />
         </SelectTrigger>
         <SelectContent>
-        {
-            Array.from({ length: 101}, (_, i) => (
-                <SelectItem key={i} value={i.toString()}>
-                    {i}
-                </SelectItem>
-            ))
-        }
+          {
+              Array.from({ length: 99}, (_, i) => (
+                  <SelectItem key={i + 1} value={(i + 1).toString()}>
+                      {i + 1} ปี
+                  </SelectItem>
+              ))
+          }
         </SelectContent>
         </Select>
-        <div>
-            ปี
-        </div>
     </div>
   )
 }

@@ -14,8 +14,10 @@ interface GraphReadBoxProps {
 
 
 export default function GraphReadBox({ handlePointData, handleGraphData }: GraphReadBoxProps) {
+    const xAxis =  handlePointData?.activeTooltipIndex ?? handlePointData ?? 'N/A';
+    const activePayload = handlePointData?.activePayload ?? [];
 
-    if (!handlePointData){
+    if (!handlePointData || !handleGraphData){
         return (
             <div className='w-full h-80 flex flex-col items-center justify-center mt-5 text-base sm:text-lg'>
                 <Card className='w-full sm:w-3/4 h-full flex items-center justify-center'>
@@ -30,18 +32,21 @@ export default function GraphReadBox({ handlePointData, handleGraphData }: Graph
     }
 
     const graphData = handleGraphData;
-    const xAxis = handlePointData.activeTooltipIndex;
 
-    console.log(graphData);
+    console.log("Graph Data:",graphData);
+    console.log("X Axis:", xAxis);
 
   return (
     <div className='w-full flex flex-col items-center justify-center mt-5 text-base sm:text-lg'>
         <Card className='w-full sm:w-3/4'>
             <CardContent className='mt-5'>
             <span className='font-bold'>ณ อายุ {xAxis} ปี</span>
-            <span className='ml-5'>{handlePointData.activePayload.map((entry: any) => 
-                    <span className='mr-5'>{entry.name}: {entry.value}</span>)}
-            </span>
+            {/* <span className='ml-5'>
+                {activePayload.map((entry: any, index: number) => 
+                    <span key={index} className='mr-5'>
+                        {entry.name}: {entry.value}
+                    </span>)}
+            </span> */}
             <br/>
             <br/>
             <p id='lifestar-wording' className='text-center'>

@@ -1,33 +1,29 @@
 'use client'
-import { Download, Share2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
-import React, { ReactElement, useRef } from 'react'
+import React, { ReactElement, useRef, useState } from 'react'
 import LifeStar from '../box/helpers/LifeStarFunction';
 import LuckStar from '../box/helpers/LuckStarFunction';
 import ChallengeStar from '../box/helpers/ChallengeStarFunction';
-import html2canvas from 'html2canvas';
-import SummayCardForDownload from './SummayCardForDownload';
+
+import SummaryCardForDownload from './SummaryCardForDownload';
 
 export default function SummaryCard({ handleGraphData } : any) {
-  const imageRef = useRef(null);
+  const imageRef = useRef<HTMLDivElement | null>(null);
   const xAxis = 34;
   const graphData = handleGraphData;
   console.log(graphData);
+  const [showDownloadComponent, setShowDownloadComponent] = useState(false);
+  const [cardRef, setCardRef] = useState<HTMLDivElement | null>(null);
 
-  const printDocument = (domElement: any) => {
-    console.log(domElement);
-    html2canvas(domElement).then((canvas) => {
-      const image = canvas.toDataURL('jpg');
-      const a = document.createElement('a');
-      a.setAttribute('download', 'starcansay.png');
-      a.setAttribute('href', image);
-      a.click();
-    });
-  };
 
   return (
     <div>
-        <Card className='flex flex-col w-full h-full rounded-3xl' ref={imageRef}>
+        {showDownloadComponent && (
+          <div style={{ position: 'absolute', top: '-9999px', left: '-9999px' }}>
+              <SummaryCardForDownload setCardRef={setCardRef} handleGraphData={graphData} />
+          </div>
+        )}
+        <Card className='flex flex-col w-full h-full rounded-3xl' >
             <CardHeader>
                 <CardTitle className='text-center flex flex-col items-center'>
                     <img src="/images/starcansaylogo-31.png" width={300}/>
@@ -57,10 +53,6 @@ export default function SummaryCard({ handleGraphData } : any) {
               </div>
             </CardContent>
             <CardFooter className='flex justify-evenly'>
-              <button onClick={() => printDocument(<SummayCardForDownload handleGraphData={graphData}/>)}>
-                <Download className='' />
-              </button>
-              <Share2 />
             </CardFooter>
         </Card>
     </div>
