@@ -1,6 +1,6 @@
 'use client'
 import GraphReadBox from '@/components/box/GraphReadBox';
-import SummaryCard from '@/components/card/SummaryCard';
+import SummaryCard from '@/components/card/ReflectMoonCard';
 import AgeDropDown from '@/components/dropdown/AgeDropDown';
 import LineGraph from '@/components/graph/LineGraph'
 import { useSession } from 'next-auth/react';
@@ -9,6 +9,8 @@ import React, {Component, Suspense, useState, useRef} from 'react';
 import { Download, Share2, Loader2, AlertCircle } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import SummaryCardForDownload from '@/components/card/SummaryCardForDownload';
+import ReflectMoonCard from '@/components/card/ReflectMoonCard';
+import NewMoonCard from '@/components/card/NewMoonCard';
 
 const isMobile = () => {
   if (typeof window === 'undefined') return false;
@@ -32,14 +34,11 @@ export default function page() {
   }
 
   const handlePointData = (data: any) => {
-    console.log('Data from Point: ', data);
     setPointData(data);
   }
 
   const handleGraphData = (data: any) => {  
-    // console.log('Data from graph: ', data);
     setGraphData(data);
-    // console.log(graphData);
   }
 
   const downloadImage = async () => {
@@ -122,15 +121,16 @@ export default function page() {
 
   return (
     <div className='w-full'>
-      <div className='flex flex-col h-fit bg-starcansayblue justify-center font-body md:flex-row w-full md:h-screen'>
-        <div className='mt-28 flex flex-col text-white lg:mr-20 md:mr-10'>
-          <p className='text-7xl text-center md:text-left'>ชีวิตนะมานิ <br/> ในวัย 34 ปี</p>
+      <div className='flex flex-col h-fit bg-starcansayblue justify-center items-center font-body md:flex-row md:items-start w-full md:min-h-screen'>
+        <div className='mt-20 md:mt-28 flex flex-col text-white lg:mr-20 md:mr-10 items-center md:items-start'>
+          <img src="https://storage.cloud.google.com/starcansay/img/sticker%20starcansay%20web-29%203.png" width='253' height='179' className='md:-ml-11'/>
+          <p className='text-7xl -ml-2 mt-5 font-starcansay text-starcansaypink text-center md:text-left'>ชีวิตนะมานิ <br/> ในวัย 34 ปี</p>
           <br/>
-          <p className='text-2xl text-center md:text-left'>เกิดวันที่ 20 ก.ย. 2540 <br/>เวลาเกิด 13.00 <br/>สถานที่เกิด เชียงใหม่</p>
+          <p className='text-2xl text-center md:text-left font-thai'>เกิดวันที่ 20 ก.ย. 2540 <br/>เวลาเกิด 13.00 <br/>สถานที่เกิด เชียงใหม่</p>
         </div>
-        <div className='flex flex-col justify-center mx-5 mt-5 md:mt-28 mb-10 max-h-full aspect-[1080/1920]'>
+        <div className='flex flex-col justify-center mx-5 mt-5 md:mt-20 mb-10 max-h-full w-[387px]'>
           <div ref={summaryCardRef}>
-            <SummaryCard handleGraphData={graphData}/>
+            <NewMoonCard handleGraphData={graphData}/>
           </div>
           <div className='flex justify-center gap-1 mt-4'>
             <button 
@@ -170,9 +170,9 @@ export default function page() {
       {/* Main Content */}
       <main className='flex flex-col w-full font-body'>
         {/* Header with Title and Dropdown */}
-        <div className='flex items-center mt-5 justify-between'>
-          <h2 className='text-2xl md:ml-60'>
-            นี่คือกราฟชีวิตของคุณนะมามิ!
+        <div className='flex items-center mt-5 justify-center md:justify-between'>
+          <h2 className='text-3xl md:ml-5 font-starcansay text-starcansayblue'>
+            นี่คือกราฟ 100 ปี ของคุณ !
           </h2>
           <div className='md:mr-60'>
             <AgeDropDown handlePointData={pointData || '25'} onPointData={handlePointData} />

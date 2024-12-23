@@ -2,11 +2,8 @@ export default function ChallengeStar (graphdata: any, xAxis: number) {
     let data = graphdata.series3[xAxis];
     let data_1 = graphdata.series3[xAxis + 1];
     let slope = graphdata.slopeSeries3[xAxis].slope;
-    console.log(`Challenge Slope: ${slope}`)
     let wording;
     let description;
-    console.log(`Challenge Now: ${data}`);
-    console.log(`Challenge Next: ${data_1}`);
     if (data >= -Math.floor((100*Math.sin(Math.PI/6))) && data <= 0){
         if ((slope >= 0)){
             wording = 'ช่วงท้าทายด้านสุขภาพและงานประจำ';

@@ -63,8 +63,6 @@ export default function SignUpForm() {
       })
     })
 
-    console.log(response);
-
     if(response.ok) {
       toast({
         title: "Sign-up Succesfully!",
@@ -77,7 +75,7 @@ export default function SignUpForm() {
         description: "You have registered with this Email, Try Sign-in or Sign-in with Google",
         variant: 'destructive'
       })
-      console.log('Registration failed');
+      console.error('Registration failed');
     }
   }
 

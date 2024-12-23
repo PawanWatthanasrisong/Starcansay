@@ -15,9 +15,6 @@ export const options: NextAuthOptions = {
         strategy: 'jwt'
     },
     secret: process.env.NEXTAUTH_SECRET,
-    pages: {
-        signIn: '/sign-in',
-    },
     providers: [
         CredentialsProvider({
           name: "Credentials",
@@ -26,7 +23,6 @@ export const options: NextAuthOptions = {
             password: { label: "Password", type: "password" }
           },
           async authorize(credentials) {
-            console.log('here');
             if(!credentials?.email || !credentials?.password) {
                 return null;
             }
@@ -46,7 +42,6 @@ export const options: NextAuthOptions = {
             if(!passwordMatch) {
                 return null;
             }
-            console.log('Correct Credentials');
             return {
             id: existingUser.id,
             email: existingUser.email,
@@ -85,8 +80,7 @@ export const options: NextAuthOptions = {
                 }
             }
         },
-        async signIn({ account, profile, user }) {
-            console.log(account,user)
+        async signIn({ account, profile, user, email }) {
             if (account?.provider === 'google') {
               const existingUser = await prisma.user.findUnique({
                 where: {email: user.email}

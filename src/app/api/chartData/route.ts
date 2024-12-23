@@ -11,19 +11,18 @@ const prisma = new PrismaClient()
 export async function GET(req: Request) {
     try{
         const response = await prisma.user.findUnique({
-        where: {email: 'teppoon25@gmail.com'},
+        where: {email: process.env.ADMIN_EMAIL},
         select: {
             data: true,
           }
         });
         if (response?.data) {
-            console.log(JSON.parse(response.data));
             return NextResponse.json(JSON.parse(response.data), { status: 200 });
         } else {
             return NextResponse.json({ message: 'No product'});
         }
     } catch(error){
-        console.log(error);
+        console.error(error);
         return NextResponse.json({ message: "Something went wrong!"}, {status: 500});
     }
     

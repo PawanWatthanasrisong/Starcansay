@@ -7,28 +7,22 @@ import ChallengeStar from '../box/helpers/ChallengeStarFunction';
 
 import SummaryCardForDownload from './SummaryCardForDownload';
 
-export default function SummaryCard({ handleGraphData } : any) {
+export default function ReflectMoonCard({ handleGraphData } : any) {
   const imageRef = useRef<HTMLDivElement | null>(null);
   const xAxis = 34;
   const graphData = handleGraphData;
-  console.log(graphData);
   const [showDownloadComponent, setShowDownloadComponent] = useState(false);
   const [cardRef, setCardRef] = useState<HTMLDivElement | null>(null);
 
 
   return (
     <div>
-        {showDownloadComponent && (
-          <div style={{ position: 'absolute', top: '-9999px', left: '-9999px' }}>
-              <SummaryCardForDownload setCardRef={setCardRef} handleGraphData={graphData} />
-          </div>
-        )}
         <Card className='flex flex-col w-full h-full rounded-3xl' >
             <CardHeader>
                 <CardTitle className='text-center flex flex-col items-center'>
-                    <img src="/images/starcansaylogo-31.png" width={300}/>
-                    <p className='text-xl md:text-lg'>
-                      ดวงชีวิตของนะมามิ ในวัย 34 ปี
+                    <img src="/images/starcansaylogo-31.png" width={144}/>
+                    <p className='font-starcansay text-starcansaypink text-xl md:text-lg'>
+                      นะมามิ
                     </p>
                 </CardTitle>
             </CardHeader>

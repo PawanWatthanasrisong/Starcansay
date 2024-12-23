@@ -13,6 +13,10 @@ const config: Config = {
 	fontFamily: {
 		'inter': ['inter'],
 		'body': ['mali'],
+		'thai': ['IBM Plex Sans Thai Looped'],
+		'starcansay': ['starcansay'],
+		'chulanarak': ['chulanarak'],
+		'ibm-plex-sans-thai': ['IBM Plex Sans Thai'],
 	},
   	extend: {
   		backgroundImage: {
@@ -77,7 +81,13 @@ const config: Config = {
   				'5': 'hsl(var(--chart-5))'
   			}
   		}
-  	}
+  	},
+	  screens: {
+		'sm': '640px',
+		'md': '769px',
+		'lg': '1024px',
+		'xl': '1280px',
+	  },
   },
 };
 export default config;

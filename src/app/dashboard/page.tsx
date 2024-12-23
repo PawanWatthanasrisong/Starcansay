@@ -11,20 +11,17 @@ export default function Page() {
   const { data: session, status } = useSession();
   const [pointData, setPointData] = useState<any>(null);
   const [graphData, setGraphData] = useState<any>(null);
-
-  console.log(session);
+  
   const handlePointData = (data: any) => {
-    console.log('Data from Point: ', data);
     setPointData(data);
   }
 
   const handleGraphData = (data: any) => {
-    console.log('Data from graph: ', data);
     setGraphData(data);
   }
 
   if (status === 'unauthenticated'){
-    redirect('/sign-in');
+    redirect('/');
   }
 
     return (

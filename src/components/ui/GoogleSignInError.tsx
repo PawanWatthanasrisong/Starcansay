@@ -18,7 +18,7 @@ export default function GoogleSignInError() {
         description: 'This email is linked to another sign-in provider. Please use the correct provider.',
         variant: 'destructive'
       })
-      redirect('/sign-in');
+      redirect('/');
     }
   },[status])
   return null;

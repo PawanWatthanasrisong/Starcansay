@@ -47,8 +47,6 @@ export default function SignInForm() {
       password: values.password,
       redirect: false,
     });
-    console.log(values);
-    console.log(signInData?.error === 'NoPasswordForCredentials');
     
     switch(signInData?.error){
       case 'CredentialsSignin':

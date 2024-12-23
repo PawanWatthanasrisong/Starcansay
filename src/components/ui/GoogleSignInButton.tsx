@@ -1,41 +1,42 @@
 'use client'
 import React, { FC, ReactNode, useEffect, useState } from 'react'
 import { Button } from './button'
-import { signIn, useSession } from 'next-auth/react';
-import { useToast } from '../hooks/use-toast';
-import { useRouter } from 'next/navigation';
-
+import { signIn } from 'next-auth/react';
+import { cn } from '@/lib/utils';
 
 interface GoogleSignInButtonProps {
   children: ReactNode;
+  className?: string;
 }
 
-const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({children}) => {
-  const router = useRouter();
-  const {data: session, status} = useSession();
-  const { toast } = useToast();
+const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
+  children,
+  className
+}) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const loginWithGogogle = async() => {
+  const loginWithGoogle = async() => {
     try{
       setIsLoading(true);
-      console.log(`sign in with google`)
-      const signInData = await signIn('google', {
-        callbackUrl: 'http://localhost:3000/graph?login=success',
+      await signIn('google', {
+        callbackUrl: 'http://localhost:3000/graph',
       });
-      console.log(signInData);
     } catch(error){
-      console.log(`Error: ${error}`);
-      setIsLoading(false);
+      console.error(`Error: ${error}`);
     } finally {
-      console.log('here');
       setIsLoading(false);
     }
   }
 
-
   return (
-    <Button disabled={isLoading} onClick={loginWithGogogle} className='w-80 h-16 bg-starcansaypink text-2xl font-bold rounded-2xl hover:bg-starcansaypink-light'>
+    <Button 
+      disabled={isLoading} 
+      onClick={loginWithGoogle} 
+      className={cn(
+        'w-80 h-16 bg-starcansaypink text-2xl font-bold rounded-2xl hover:bg-starcansaypink-light',
+        className
+      )}
+    >
       {children}
     </Button>
   )

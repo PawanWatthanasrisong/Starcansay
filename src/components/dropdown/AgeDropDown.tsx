@@ -16,7 +16,6 @@ export default function AgeDropDown({ handlePointData, onPointData}: AgeDropDown
   const [age, setAge] = useState('25');
 
   useEffect(() => {
-    console.log(handlePointData);
     handleAgeChange(handlePointData);
   },[handlePointData])
 

@@ -2,11 +2,8 @@ export default function LuckStar (graphdata: any, xAxis: number) {
     let data = graphdata.series2[xAxis];
     let data_1 = graphdata.series2[xAxis + 1];
     let slope = graphdata.slopeSeries2[xAxis].slope;
-    console.log(`Luck Slope: ${slope}`)
     let wording;
     let description;
-    console.log(`Luck Now: ${data}`);
-    console.log(`Luck Next: ${data_1}`);
     if (data >= -Math.floor((50*Math.sin(Math.PI/6))) && data <= 0){
         if ((slope >= 0)){
             wording = 'ช่วงมีโชคด้านสุขภาพและงานประจำ';

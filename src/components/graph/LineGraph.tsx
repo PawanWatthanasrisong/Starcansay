@@ -30,9 +30,7 @@ export default function LineGraph ({ onPointData, onGraphData, handlePointData }
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const handleClick = (data: any) => {
-      console.log(`data`,data);
       if(data.activeTooltipIndex){
-        console.log(data.activeTooltipIndex);
         setTooltipData(data);
         setIsClicked(true);
         onPointData(data.activeTooltipIndex);
@@ -106,9 +104,7 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
       if (!response.ok) {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
-      console.log(JSON.stringify(response));
       const result = await response.json();
-      console.log(result);
       //Format data for Recahrts
       const formattedData = result.xAxis.map((x:any, index: number) => ({
         age: x,
@@ -116,7 +112,6 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
         series2: result.series2[index],
         series3: result.series3[index],
       }));
-      console.log(formattedData);
       setChartData(formattedData);
       setGraphData(result);
       onGraphData(result);
@@ -147,7 +142,6 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
     let pointData = {
       activeTooltipIndex: handlePointData
     }
-    console.log('pointdata', pointData)
     handleClick(pointData);
   },[handlePointData]);
 

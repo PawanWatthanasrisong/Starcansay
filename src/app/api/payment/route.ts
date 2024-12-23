@@ -15,7 +15,7 @@ export async function POST(req: NextRequest){
             dpmCheckerLink: `https://dashboard.stripe.com/settings/payment_methods/review?transaction_id=${paymentIntent.id}`,
         })
     } catch(error){
-        console.log(error);
+        console.error(error);
         return NextResponse.json({ message: "Something went wrong!"}, {status: 500});
     }
 }
