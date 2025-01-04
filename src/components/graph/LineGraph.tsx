@@ -12,9 +12,10 @@ interface LineGraphProps {
   onPointData: (data:any) => void;
   onGraphData: (data:any) => void;
   handlePointData: any
+  username: string
 }
 
-export default function LineGraph ({ onPointData, onGraphData, handlePointData }: LineGraphProps) {
+export default function LineGraph ({ onPointData, onGraphData, handlePointData, username }: LineGraphProps) {
 
   const [chartData, setChartData] = useState<any[]>([]);
   const [activeSeries1, setActiveSeries1] = useState<boolean>(true);
@@ -98,15 +99,18 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      const response = await fetch('/api/chartData', {
-        method: 'GET'
+      if (!username) {
+        return;
+      }
+      const response = await fetch(`/api/chartData?username=${encodeURIComponent(username)}`, {
+        method: 'GET',
       });
       if (!response.ok) {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
       const result = await response.json();
-      //Format data for Recahrts
-      const formattedData = result.xAxis.map((x:any, index: number) => ({
+      // Format data for Recharts
+      const formattedData = result.xAxis.map((x: any, index: number) => ({
         age: x,
         series1: result.series1[index],
         series2: result.series2[index],
@@ -118,7 +122,7 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
       setIsLoading(false);
     };
     fetchData();
-  },[]);
+  }, [username]);
 
   useEffect(() => {
     setWidth(window.innerWidth);

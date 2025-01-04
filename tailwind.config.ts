@@ -40,6 +40,9 @@ const config: Config = {
 			starcansayblue:{
 				DEFAULT: '#4E6AB3',
 			},
+			starcansaylightpink:{
+				DEFAULT: '#FFEAEA',
+			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

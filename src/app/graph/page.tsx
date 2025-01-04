@@ -3,14 +3,16 @@ import GraphReadBox from '@/components/box/GraphReadBox';
 import SummaryCard from '@/components/card/ReflectMoonCard';
 import AgeDropDown from '@/components/dropdown/AgeDropDown';
 import LineGraph from '@/components/graph/LineGraph'
-import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
-import React, {Component, Suspense, useState, useRef} from 'react';
+import React, {Component, Suspense, useState, useRef, useEffect} from 'react';
 import { Download, Share2, Loader2, AlertCircle } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import SummaryCardForDownload from '@/components/card/SummaryCardForDownload';
 import ReflectMoonCard from '@/components/card/ReflectMoonCard';
 import NewMoonCard from '@/components/card/NewMoonCard';
+import Navbar from '@/components/ui/Navbar';
+import { createClient } from '@/utils/supabase/client';
+import { Session, User } from '@supabase/supabase-js'
 
 const isMobile = () => {
   if (typeof window === 'undefined') return false;
@@ -20,7 +22,8 @@ const isMobile = () => {
 };
 
 export default function page() {
-  const { data: session, status } = useSession();
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [showDownloadComponent, setShowDownloadComponent] = useState(false);
   const [cardRef, setCardRef] = useState<HTMLDivElement | null>(null);
   const [pointData, setPointData] = useState<any>(null);
@@ -28,10 +31,24 @@ export default function page() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const summaryCardRef = useRef<HTMLDivElement>(null);
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
 
-  if (status === 'unauthenticated'){
-    redirect('/');
-  }
+  const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log(session)
+      setSession(session)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   const handlePointData = (data: any) => {
     setPointData(data);
@@ -183,7 +200,12 @@ export default function page() {
           <section className='flex flex-col items-center mt-10 w-full'>
             {/* Line Graph */}
             <div className='w-full'>
-              <LineGraph onPointData={handlePointData} onGraphData={handleGraphData} handlePointData={pointData} />
+              <LineGraph 
+                onPointData={handlePointData} 
+                onGraphData={handleGraphData} 
+                handlePointData={pointData} 
+                username={session?.user?.email || ''}
+              />
             </div>
 
             {/* Graph ReadBox */}

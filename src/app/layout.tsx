@@ -2,7 +2,6 @@
 import type { Metadata } from "next";
 import { Inter, Kanit } from "next/font/google";
 import "./globals.css";
-import ClientWrapper from "./_app";
 import Navbar from "@/components/ui/Navbar";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -26,8 +25,9 @@ export default function RootLayout({
   return (
     <html lang="en">
         <body className={inter.className}>
+          <Navbar/>
           <main>
-            <ClientWrapper>{children}</ClientWrapper>
+            {children}
           </main>
           <Toaster/>
           </body>

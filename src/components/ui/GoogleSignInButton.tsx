@@ -1,30 +1,34 @@
 'use client'
-import React, { FC, ReactNode, useEffect, useState } from 'react'
+import { FC, ReactNode, useState } from 'react'
 import { Button } from './button'
-import { signIn } from 'next-auth/react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils'
+import { createClient } from '@/utils/supabase/client'
 
 interface GoogleSignInButtonProps {
-  children: ReactNode;
-  className?: string;
+  children: ReactNode
+  className?: string
 }
 
 const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
   children,
   className
 }) => {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false)
 
   const loginWithGoogle = async() => {
-    try{
-      setIsLoading(true);
-      await signIn('google', {
-        callbackUrl: 'http://localhost:3000/graph',
-      });
-    } catch(error){
-      console.error(`Error: ${error}`);
+    try {
+      setIsLoading(true)
+      const supabase = createClient()
+        await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {  
+            redirectTo: `http://localhost:3000/graph`,
+          },
+        })
+    } catch (error) {
+      console.error('Error:', error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
@@ -42,4 +46,4 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
   )
 }
 
-export default GoogleSignInButton;
+export default GoogleSignInButton
