@@ -1,10 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
-import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { useToast } from "@/components/hooks/use-toast"
+import { createClient } from '@/utils/supabase/client';
+import { Session, User } from '@supabase/supabase-js'
 
 interface SheetData {
   id: string
@@ -14,20 +15,33 @@ interface SheetData {
 }
 
 export default function AdminPage() {
-  const { data: session, status } = useSession()
   const [sheets, setSheets] = useState<SheetData[]>([])
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({})
+  const [user, setUser] = useState<Session | null>(null);
   const { toast } = useToast()
 
-  // Protect admin route
-  if (status === 'unauthenticated') {
-    redirect('/')
-  }
+  const supabase = createClient();
 
-  // Check if user is admin
-  if (status === 'authenticated' && session?.user?.email !== process.env.ADMIN_EMAIL) {
-    redirect('/graph')
-  }
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log(session?.user.email)
+      if (!session || session.user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+        console.log(session?.user.email)
+        console.log(process.env.NEXT_PUBLIC_ADMIN_EMAIL)
+        console.log('not admin');
+        redirect('/graph')
+      }
+      setUser(session)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   useEffect(() => {
     fetchSheets()

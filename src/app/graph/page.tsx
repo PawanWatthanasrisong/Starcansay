@@ -38,6 +38,9 @@ export default function page() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log(session)
+      if (!session) {
+        redirect('/')
+      }
       setSession(session)
     })
 
@@ -66,11 +69,31 @@ export default function page() {
         throw new Error('Summary card element not found');
       }
 
+      // Pre-load images before capturing
+      const images = summaryCardRef.current.getElementsByTagName('img');
+      await Promise.all(Array.from(images).map(img => { 
+        return new Promise((resolve, reject) => {
+          const newImg = new Image();
+          newImg.crossOrigin = 'anonymous'; // Enable CORS
+          newImg.onload = () => resolve(true);
+          newImg.onerror = reject;
+          newImg.src = img.src;
+        });
+      }));
+
       const canvas = await html2canvas(summaryCardRef.current, {
         scale: 2, // Better balance between quality and performance
         logging: false,
         useCORS: true,
+        allowTaint: true,
         backgroundColor: null,
+        onclone: (document, element) => {
+          // Ensure all images in cloned element have crossOrigin set
+          const clonedImages = element.getElementsByTagName('img');
+          Array.from(clonedImages).forEach(img => {
+            img.crossOrigin = 'anonymous';
+          });
+        }
       });
 
       const image = canvas.toDataURL('image/png', 1.0);
@@ -138,7 +161,7 @@ export default function page() {
 
   return (
     <div className='w-full'>
-      <div className='flex flex-col h-fit bg-starcansayblue justify-center items-center font-body md:flex-row md:items-start w-full md:min-h-screen'>
+      <div className='flex flex-col h-fit bg-starcansayblue justify-center items-center font-body md:flex-row md:items-start w-full md:min-h-fit'>
         <div className='mt-20 md:mt-28 flex flex-col text-white lg:mr-20 md:mr-10 items-center md:items-start'>
           <img src="https://storage.cloud.google.com/starcansay/img/sticker%20starcansay%20web-29%203.png" width='253' height='179' className='md:-ml-11'/>
           <p className='text-7xl -ml-2 mt-5 font-starcansay text-starcansaypink text-center md:text-left'>ชีวิตนะมานิ <br/> ในวัย 34 ปี</p>
@@ -198,7 +221,6 @@ export default function page() {
 
         {/* Graph and ReadBox Section */}
           <section className='flex flex-col items-center mt-10 w-full'>
-            {/* Line Graph */}
             <div className='w-full'>
               <LineGraph 
                 onPointData={handlePointData} 
@@ -215,7 +237,7 @@ export default function page() {
 
             {/* Graph Guide Section */}
             <div className='w-full md:w-3/4'>
-              <p className='ml-5'>วิธีอ่านกราฟ</p>
+              <p className='ml-5 font-thai'>วิธีอ่านกราฟ</p>
             </div>
           </section>
       </main>

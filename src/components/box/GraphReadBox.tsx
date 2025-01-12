@@ -34,7 +34,7 @@ export default function GraphReadBox({ handlePointData, handleGraphData }: Graph
     const graphData = handleGraphData;
 
   return (
-    <div className='w-full flex flex-col items-center justify-center mt-5 text-base sm:text-lg'>
+    <div className='w-full flex flex-col items-center font-thai justify-center mt-5 text-base sm:text-lg'>
         <Card className='w-full sm:w-3/4'>
             <CardContent className='mt-5'>
             <span className='font-bold'>ณ อายุ {xAxis} ปี</span>

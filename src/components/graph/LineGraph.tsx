@@ -161,12 +161,10 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
     <div>
       {chartData.length > 0 && (
         <div className='w-full flex flex-col justify-center items-center text-sm sm:text-lg'>
-          <ResponsiveContainer width={graphWidth} height={graphHeight} className='mr-5'>
-            <LineChart data={chartData} onMouseLeave={handleMouseLeave} onClick={handleClick} onMouseMove={handleMouseEnter}>
-              <CartesianGrid strokeDasharray="4 4" />
-              <XAxis type='number' dataKey='age' name='อายุ' tickMargin={10} tickCount={11} domain={[0,100]} unit='ปี'/>
-              <YAxis type='number' tickMargin={10} domain={[-100,100]} hide={true} />
-              <Tooltip content={<CustomTooltip payload={tooltipData} />} active={isActive}/>
+          <ResponsiveContainer width={graphWidth} height={graphHeight} className='mr-5 w-full flex justify-center items-center'>
+            <LineChart data={chartData} width={1100} height={graphHeight} onMouseLeave={handleMouseLeave} onClick={handleClick} onMouseMove={handleMouseEnter}>
+              <XAxis dataKey='age' name='อายุ' unit='ปี' />
+              <Tooltip content={<CustomTooltip payload={tooltipData} />} active={isActive} cursor={{ stroke: 'red', strokeWidth: 1 }}/>
               <Legend />
               <ReferenceLine y="0" stroke="black" opacity='50%'/>
               <ReferenceLine x={tooltipData? tooltipData.activeTooltipIndex : -1} stroke="red" opacity='100%'/>
@@ -206,19 +204,19 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
             </LineChart>
           </ResponsiveContainer>
           <div className='mt-5'>
-            <Button className={`w-fit hover:bg-violet-400 ${activeSeries1 ? 'bg-purple-500': 'bg-gray-400'}  text-xs sm:text-sm `} onClick={() => setActiveSeries1(!activeSeries1)}>
+            <Button className={`w-fit ${activeSeries1 ? 'bg-purple-500 hover:bg-violet-400'  : 'bg-gray-400 hover:bg-gray-400'} font-thai  text-xs sm:text-sm `} onClick={() => setActiveSeries1(!activeSeries1)}>
               <svg className="w-2 h-2 sm:w-4 sm:h-4 mr-1" fill="white" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="6" />
               </svg>
                 ดาวชีวิต
             </Button>
-            <Button className={`w-fit hover:bg-green-400 ${activeSeries2 ? 'bg-green-500': 'bg-gray-400'} mx-5 sm:mx-10 text-xs sm:text-sm`} onClick={() => setActiveSeries2(!activeSeries2)}>
+            <Button className={`w-fit  ${activeSeries2 ? 'bg-green-500 hover:bg-green-400': 'bg-gray-400 hover:bg-gray-400'} font-thai mx-5 sm:mx-10 text-xs sm:text-sm`} onClick={() => setActiveSeries2(!activeSeries2)}>
               <svg className="w-2 h-2 sm:w-4 sm:h-4 mr-1" fill="white" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="6" />
               </svg>
                 ดาวโชค
             </Button>
-            <Button className={`w-fit hover:bg-red-400 ${activeSeries3 ? 'bg-red-500': 'bg-gray-400'} text-xs sm:text-sm`} onClick={() => setActiveSeries3(!activeSeries3)}>
+            <Button className={`w-fit ${activeSeries3 ? 'bg-red-500 hover:bg-red-400': 'bg-gray-400 hover:bg-gray-400'} font-thai text-xs sm:text-sm`} onClick={() => setActiveSeries3(!activeSeries3)}>
               <svg className="w-2 h-2 sm:w-4 sm:h-4 mr-1" fill="white" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="6" />
               </svg>

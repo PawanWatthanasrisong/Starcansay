@@ -1,13 +1,31 @@
+'use client'
+
 import Link from 'next/link'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import UserAccountNav from './UserAccountNav'
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/utils/supabase/client'
+import { Session } from '@supabase/supabase-js'
 
-export default async function Navbar() {
+export default function Navbar() {
+  const [session, setSession] = useState<Session | null>(null);
+  const supabase = createClient();
 
-  const supabase = await createClient();
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+    })
 
-  const { data, error } = await supabase.auth.getUser()
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+
+    // Cleanup subscription
+    return () => subscription.unsubscribe()
+  }, [])
 
   return (
     <div className='bg-white py-2 border-b border-s-zinc-200 fixed w-full z-10 top-0'>
@@ -18,7 +36,7 @@ export default async function Navbar() {
                 Star Can Say.
               </p>
             </Link>
-            {data?.user ? (
+            {session?.user ? (
               <UserAccountNav/>
             ): ""}
         </div>
