@@ -39,9 +39,18 @@ const config: Config = {
 
 			starcansayblue:{
 				DEFAULT: '#4E6AB3',
+				background: '#DBE2F5'
 			},
 			starcansaylightpink:{
 				DEFAULT: '#FFEAEA',
+			},
+			starcansaygreen: {
+				DEFAULT: '#89C18F',
+				background: '#E4E8E5'
+			},
+			starcansayred: {
+				DEFAULT: '#E46C6C',
+				background: '#FBE0E0'
 			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
