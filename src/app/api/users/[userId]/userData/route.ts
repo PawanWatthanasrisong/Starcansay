@@ -12,12 +12,10 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
             where: { email: userId },
             select: { name: true, birthdate: true, birthplace: true },
         });
-
         if (!response) {
             return NextResponse.json({ message: 'User not found' }, { status: 404 });
         }
         const { name, birthplace, birthdate } = response;
-
         const validBirthDate = birthdate ? thaiBirthdate(birthdate) : null;
         const validBirthTime = birthdate ? thaiBirthTime(birthdate) : null;
 
