@@ -1,14 +1,56 @@
 'use client'
 import React, { useRef, useState } from 'react'
 import SummaryCardPure from './summary-card-pure';
-export default function NewMoonCard({ handleGraphData } : any) {
-  const imageRef = useRef<HTMLDivElement | null>(null);
-  const xAxis = 44;
+import type GraphData from '@/types/graph';
+import LifeStar from '../box/helpers/LifeStarFunction';
+import LuckStar from '../box/helpers/LuckStarFunction';
+import ChallengeStar from '../box/helpers/ChallengeStarFunction';
+
+interface SummaryCardProps {
+  handleGraphData: GraphData | null;
+  userData: {
+    name: string;
+    validBirthDate: string;
+    validBirthTime: string;
+    birthplace: string;
+    age: number;
+  }
+  ;
+}
+
+export default function SummaryCard({ handleGraphData, userData }: SummaryCardProps) {
+  const xAxis = userData.age; // Default to 0 if age is null
   const graphData = handleGraphData;
-  const [showDownloadComponent, setShowDownloadComponent] = useState(false);
-  const [cardRef, setCardRef] = useState<HTMLDivElement | null>(null);
+
+  const lifeStar = {
+    title: LifeStar(graphData, xAxis).title,
+    img_url: LifeStar(graphData, xAxis).img_url,
+    shortDescription: LifeStar(graphData, xAxis).shortDescription,
+    wording: LifeStar(graphData, xAxis).wording,
+    subDescription: LifeStar(graphData, xAxis).subDescription
+  }
+
+  const luckStar = {
+    subWording: LuckStar(graphData, xAxis).subWording
+  }
+
+  const challengeStar = {
+    subWording: ChallengeStar(graphData, xAxis).subWording
+  }
+
+  const status = {
+    name: lifeStar.title,
+    title: lifeStar.title,
+    description: `ดาวชีวิตกำลังอยู่ใน${lifeStar.wording}`
+  }
 
   return (
-    <SummaryCardPure name="นะมามิ" status={{name: "กำลัง New Moon", title: "กำลัง New Moon", description: "ดาวชีวิตกำลังอยู่ในช่วงเริ่มต้นไปสู่มุ่งหน้า"}} lifeStar={{shortDescription: "กำลังโหลดรอแปปนึงนะะ :D", subDescription: "กำลังโหลดรอแปปนึงนะะ :D"}} luckStar={{subWording: "กำลังโหลดรอแปปนึงนะะ :D"}} challengeStar={{subWording: "กำลังโหลดรอแปปนึงนะะ :D"}}/>
+    <SummaryCardPure 
+      name={userData.name} 
+      status={status} 
+      lifeStar={lifeStar} 
+      luckStar={luckStar} 
+      challengeStar={challengeStar}
+    />
   )
 }

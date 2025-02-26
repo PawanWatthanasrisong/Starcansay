@@ -5,19 +5,21 @@ import React from 'react'
 interface SummaryCardPureProps {
   name: string;
   status: {
-    name: string;
-    title: string;
-    description: string;
+    name?: string;
+    title?: string;
+    description?: string;
   }
   lifeStar: {
-    shortDescription: string;
-    subDescription: string;
+    shortDescription?: string;
+    subDescription?: string;
+    wording?: string;
+    img_url?: string;
   };
   luckStar: {
-    subWording: string;
+    subWording?: string;
   };
   challengeStar: {
-    subWording: string;
+    subWording?: string;
   };
 }
 
@@ -31,7 +33,7 @@ export default function SummaryCardPure({ name, status, lifeStar, luckStar, chal
                     <p className='font-starcansay text-starcansaypink text-[40px] lg:text-[32px]'>
                       {name}
                     </p>
-                    <img src="https://storage.cloud.google.com/starcansay/img/star%20caractor%20-37.png" width={295} alt="starcansay caractor"/>
+                    <img src={lifeStar.img_url} width={295} alt="starcansay caractor"/>
                 </CardTitle>
             </CardHeader>
             <CardContent className='mt-2 flex flex-grow flex-col justify-evenly items-center w-full text-xs px-4 py-0'>
@@ -56,7 +58,7 @@ export default function SummaryCardPure({ name, status, lifeStar, luckStar, chal
               <br/>
               <div className='grid grid-cols-2 gap-2'>
                 <div className='grid grid-cols-2 gap-2 col-span-1'>
-                  <img src="https://storage.cloud.google.com/starcansay/img/sticker%20starcansay%20web-29%203.png" width={85.6} className='col-span-1' alt="starcansay sticker"/>
+                  <img src="https://storage.googleapis.com/starcansay/img/star%20caractor%20-43.png" width={85.6} className='col-span-1' alt="starcansay sticker"/>
                   <div className='col-span-1 -ml-3 content-center'>
                     <p className='text-starcansayblue font-ibm-plex-sans-thai text-[12px] font-bold'>ดาวโชค</p>
                     <p className='text-starcansayblue font-thai text-[10px] font-medium leading-[13px]'>
@@ -65,7 +67,7 @@ export default function SummaryCardPure({ name, status, lifeStar, luckStar, chal
                   </div>
                 </div>
                 <div className='grid grid-cols-2 gap-2 col-span-1'>
-                  <img src="https://storage.cloud.google.com/starcansay/img/sticker%20starcansay%20web-29%203.png" width={85.6} className='col-span-1' alt="starcansay sticker"/>
+                  <img src="https://storage.googleapis.com/starcansay/img/star%20caractor%20-41.png" width={85.6} className='col-span-1' alt="starcansay sticker"/>
                   <div className='col-span-1 -ml-3 content-center'>
                     <p className='text-starcansayblue font-ibm-plex-sans-thai text-[12px] font-bold'>ดาวท้าทาย</p>
                     <p className='text-starcansayblue font-thai text-[10px] font-medium align-middle leading-[13px]'>

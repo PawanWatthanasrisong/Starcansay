@@ -6,26 +6,43 @@ import { FileX, Grid } from 'lucide-react';
 import ChallengeStar from '../box/helpers/ChallengeStarFunction';
 import LuckStar from '../box/helpers/LuckStarFunction';
 import LifeStar from '../box/helpers/LifeStarFunction';
-
+import type { CategoricalChartState } from 'recharts/types/chart/types';
+import type GraphData from '@/types/graph';
 
 interface LineGraphProps {
-  onPointData: (data:number) => void;
-  onGraphData: (data:number[]) => void;
-  handlePointData: number
-  username: string
-  onLoadingChange?: (isLoading: boolean) => void
+  onPointData: (data: number) => void;
+  onGraphData: (data: GraphData) => void;
+  handlePointData: number;
+  username: string;
+  onLoadingChange?: (isLoading: boolean) => void;
 }
 
-export default function LineGraph ({ onPointData, onGraphData, handlePointData, username, onLoadingChange }: LineGraphProps) {
-  const [chartData, setChartData] = useState<number[]>([]);
-  const [activeSeries1, setActiveSeries1] = useState<boolean>(true);
-  const [activeSeries2, setActiveSeries2] = useState<boolean>(true); 
-  const [activeSeries3, setActiveSeries3] = useState<boolean>(true);
-  const [tooltipData, setTooltipData] = useState<{ activeTooltipIndex: number } | null>(null);
+interface payLoad {
+  age: number;
+  series1: number;
+  series2: number;
+  series3: number;
+}
+
+interface activePayload {
+  name: string;
+  dataKey: string;
+  payload: payLoad;
+  color: string;
+}
+
+interface TooltipData {
+  activeTooltipIndex: number;
+  activePayload: activePayload[];
+}
+
+export default function LineGraph({ onPointData, onGraphData, handlePointData, username, onLoadingChange }: LineGraphProps) {
+  const [chartData, setChartData] = useState<GraphData[]>([]); // Changed to 'any[]' to match the expected data structure
+  const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
   const [isClicked, setIsClicked] = useState<boolean>(false);
   const [isActive, setIsActive] = useState<boolean>(false);
   const [width, setWidth] = useState<number>(0);
-  const [graphData, setGraphData] = useState<string>('');
+  const [graphData, setGraphData] = useState<GraphData>({ xAxis: [], series1: [], series2: [], series3: [], slopeSeries1: [] });
   const [graphHeight, setGraphHeight] = useState<number>(400);
   const [graphWidth, setGraphWidth] = useState<string>('100%');
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -36,22 +53,26 @@ export default function LineGraph ({ onPointData, onGraphData, handlePointData, 
     }
   }, [isLoading, onLoadingChange]);
 
-  const handleClick = (data: { activeTooltipIndex: number }) => {
-      if(data.activeTooltipIndex){
-        setTooltipData(data);
-        setIsClicked(true);
-        onPointData(data.activeTooltipIndex);
+  const handleClick = (data: CategoricalChartState) => {
+    if (data.activeTooltipIndex !== undefined && data.activePayload) { // Check for undefined and ensure activePayload is defined
+      const parsedData: TooltipData = {
+        activeTooltipIndex: data.activeTooltipIndex,
+        activePayload: data.activePayload.map(({ name, dataKey, payload, color }) => ({ name, dataKey, payload, color })), // Filtered properties
       }
+      setTooltipData(parsedData);
+      setIsClicked(true);
+      onPointData(data.activeTooltipIndex);
+    }
   }
 
   useEffect(() => {
     const pointData = {
-      activeTooltipIndex: handlePointData
+      activeTooltipIndex: handlePointData,
+      activePayload: []
     }
     setTooltipData(pointData);
     setIsClicked(true);
-  },[handlePointData]);
-
+  }, [handlePointData]);
 
   const handleMouseLeave = () => {
     setIsActive(false);
@@ -60,82 +81,77 @@ export default function LineGraph ({ onPointData, onGraphData, handlePointData, 
     }
   };
 
-  const handleMouseEnter = (data: any) => {
+  const handleMouseEnter = (data: { activeTooltipIndex: number | undefined }) => { // Specify the type
     setIsActive(true);
     if (!isClicked) {  // Only update data if not clicked
-      setTooltipData(data);
+      setTooltipData({ activeTooltipIndex: data.activeTooltipIndex ?? -1, activePayload: [] });
     }
   };
 
-  // Reset click behavior to allow hovering again
-  const resetClick = () => {
-    setIsClicked(false);  // Allow hovering again
-  };
-
   const entrySwitch = (name: string, age: number) => {
-    let result;
+    let result: string | undefined; // Specify the type
     switch (name) {
-      case 'ดาวชีวิต' :
+      case 'ดาวชีวิต':
         result = LifeStar(graphData, age).wording;
         break;
-      case 'ดาวโชค' :
+      case 'ดาวโชค':
         result = LuckStar(graphData, age).wording;
         break;
-      case 'ดาวท้าทาย' :
+      case 'ดาวท้าทาย':
         result = ChallengeStar(graphData, age).wording;
         break;
     }
     return result;  
   }
 
-
-// Custom Tooltip component
-const CustomTooltip = ({ payload }: { payload: any }) => {
-  if (payload.length !== 0) {
-    return (
-      <div className="customized-tooltip-content bg-white border-[1px] rounded-sm border-zinc-400 shadow-lg">
-        <div className='m-3'>
-        <p className="total">ณ อายุ {payload[0].payload.age} ปี</p>
-        <ul className="list">
-          {payload.map((entry:any, index:any) => (
-            <li key={`item-${index}`} style={{ color: entry.color }}>
-              {`${entry.name}: ${entrySwitch(entry.name, payload[0].payload.age)}`}
-            </li>
-          ))}
-        </ul>
+  const CustomTooltip = ({ payload }: { payload: activePayload[] }) => { // Specify the type
+    if (payload.length !== 0) {
+      return (
+        <div className="customized-tooltip-content bg-white border-[1px] rounded-sm border-zinc-400 shadow-lg">
+          <div className='m-3'>
+            <p className="total">ณ อายุ {payload[0].payload.age} ปี</p>
+            <ul className="list">
+              {payload.map((entry, index) => (
+                <li key={`item-${entry.name}-${index}`} style={{ color: entry.color }}> {/* Changed key to avoid using index */}
+                  {`${entry.name}: ${entrySwitch(entry.name, payload[0].payload.age)}`}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  return null;
-};
+    return null;
+  };
+
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!username) return;
+
       setIsLoading(true);
-      if (!username) {
-        return;
+      try {
+        const response = await fetch(`/api/users/${encodeURIComponent(username)}/chartData`);
+        if (!response.ok) throw new Error(`Error: ${response.status} ${response.statusText}`);
+
+        const result = await response.json();
+        const formattedData = result.xAxis.map((x: number, index: number) => ({
+          age: x,
+          series1: result.series1[index],
+          series2: result.series2[index],
+          series3: result.series3[index],
+        }));
+        setChartData(formattedData);
+        setGraphData(result);
+        onGraphData(result);
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      } finally {
+        setIsLoading(false);
       }
-      const response = await fetch(`/api/users/${encodeURIComponent(username)}/chartData`, {
-        method: 'GET',
-      });
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status} ${response.statusText}`);
-      }
-      const result = await response.json();
-      // Format data for Recharts
-      const formattedData = result.xAxis.map((x: number, index: number) => ({
-        age: x,
-        series1: result.series1[index],
-        series2: result.series2[index],
-        series3: result.series3[index],
-      }));
-      setChartData(formattedData);
-      setGraphData(result);
-      onGraphData(result);
-      setIsLoading(false);
     };
+
     fetchData();
   }, [username]);
 
@@ -144,21 +160,20 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
     const handleResize = () => setWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-    
   }, []);
 
   useEffect(() => {
-    if (width >= 768){
+    if (width >= 768) {
       setGraphHeight(400);
       setGraphWidth('100%');
     } else {
       setGraphHeight(200);
       setGraphWidth('100%');
     }
-  },[width])
+  }, [width]);
 
   if (isLoading) {
-    return  (
+    return (
       <div className="flex justify-center items-center w-full">
         กำลังโหลดรอแปปนึงนะะ :D
       </div>
@@ -175,8 +190,8 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
               width={1100}
               height={graphHeight} 
               onMouseLeave={handleMouseLeave} 
-              onClick={handleClick} 
-              onMouseMove={handleMouseEnter}
+              onClick={(event) => handleClick(event)}
+              onMouseMove={(event) => handleMouseEnter({ activeTooltipIndex: event.activeTooltipIndex })}
               margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
             >
               <XAxis 
@@ -184,8 +199,8 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
                 name='อายุ'
                 unit='ปี'
                 stroke="#4E6AB3"
-                axisLine={{strokeWidth: 2}}
-                tickLine={{strokeWidth: 2}}
+                axisLine={{ strokeWidth: 2 }}
+                tickLine={{ strokeWidth: 2 }}
                 tick={{ fontSize: 20, fontWeight: 'bold' }}
                 tickMargin={10}
                 interval={4}
@@ -200,9 +215,9 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
                 formatter={(value) => <span style={{ color: '#4E6AB3' }} className='mr-10'>{value}</span>}
                 align='left'
               />
-              <Tooltip content={<CustomTooltip payload={tooltipData} />} active={isActive} cursor={{ stroke: '#F4AACA', strokeWidth: 4 }}/>
-              <CartesianGrid strokeDasharray="0 0" className='bg-white' horizontal={false} horizontalPoints={[0,150]} stroke='white' strokeWidth={2} />
-              <ReferenceLine x={tooltipData?.activeTooltipIndex ?? -1} stroke="#F4AACA" strokeWidth={4} opacity='100%'/>
+              <Tooltip content={<CustomTooltip payload={tooltipData?.activePayload ?? []} />} active={isActive} cursor={{ stroke: '#F4AACA', strokeWidth: 4 }} />
+              <CartesianGrid strokeDasharray="0 0" className='bg-white' horizontal={false} horizontalPoints={[0, 150]} stroke='white' strokeWidth={2} />
+              <ReferenceLine x={tooltipData?.activeTooltipIndex ?? -1} stroke="#F4AACA" strokeWidth={4} opacity='100%' />
               <Line 
                 type="monotone" 
                 dataKey="series1" 
@@ -210,10 +225,9 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
                 strokeWidth='4px' 
                 name='ดาวชีวิต' 
                 dot={false} 
-                hide={!activeSeries1} 
                 isAnimationActive={false} 
                 legendType='plainline'
-                />
+              />
               <Line 
                 type="monotone" 
                 dataKey="series2" 
@@ -221,10 +235,9 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
                 strokeWidth='4px' 
                 name='ดาวโชค' 
                 dot={false} 
-                hide={!activeSeries2} 
                 isAnimationActive={false} 
                 legendType='none'
-                />
+              />
               <Line 
                 type="monotone" 
                 dataKey="series3" 
@@ -232,10 +245,9 @@ const CustomTooltip = ({ payload }: { payload: any }) => {
                 strokeWidth='4px' 
                 name='ดาวท้าทาย' 
                 dot={false} 
-                hide={!activeSeries3} 
                 isAnimationActive={false} 
                 legendType='none'
-                />
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>

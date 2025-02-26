@@ -1,18 +1,15 @@
 'use client'
 import GraphReadBox from '@/components/box/GraphReadBox';
-import SummaryCard from '@/components/card/ReflectMoonCard';
+import SummaryCard from '@/components/card/summary-card';
 import AgeDropDown from '@/components/dropdown/AgeDropDown';
 import LineGraph from '@/components/graph/LineGraph'
 import { redirect } from 'next/navigation';
-import React, {Component, Suspense, useState, useRef, useEffect} from 'react';
-import { Download, Share2, Loader2, AlertCircle } from 'lucide-react';
+import React, {useState, useRef, useEffect} from 'react';
+import { Download, Share2, Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
-import SummaryCardForDownload from '@/components/card/SummaryCardForDownload';
-import ReflectMoonCard from '@/components/card/ReflectMoonCard';
-import NewMoonCard from '@/components/card/summary-card';
-import Navbar from '@/components/ui/Navbar';
 import { createClient } from '@/utils/supabase/client';
 import type { Session, User } from '@supabase/supabase-js'
+import type GraphData from '@/types/graph';
 
 const isMobile = () => {
   if (typeof window === 'undefined') return false;
@@ -21,25 +18,28 @@ const isMobile = () => {
   );
 };
 
+interface UserData {
+  name: string;
+  validBirthDate: string;
+  validBirthTime: string;
+  birthplace: string;
+  age: number;
+}
+
 export default function page() {
   const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [showDownloadComponent, setShowDownloadComponent] = useState(false);
-  const [cardRef, setCardRef] = useState<HTMLDivElement | null>(null);
   const [pointData, setPointData] = useState<number | null>(null);
-  const [graphData, setGraphData] = useState<number[] | null>(null);
+  const [graphData, setGraphData] = useState<GraphData | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const summaryCardRef = useRef<HTMLDivElement>(null);
-  const [name, setName] = useState<string | null>(null);
-  const [isLoadingSession, setIsLoadingSession] = useState(true);
+  const [userData, setUserData] = useState<UserData | null>(null);
 
   const supabase = createClient();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log(session)
       if (!session) {
         redirect('/')
       }
@@ -59,7 +59,7 @@ export default function page() {
     setPointData(data);
   }
 
-  const handleGraphData = (data: number[]) => {  
+  const handleGraphData = (data: GraphData) => {  
     setGraphData(data);
   }
 
@@ -73,12 +73,9 @@ export default function page() {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const { name, birthdate, birthTime, birthplace } = await getUserData(encodeURIComponent(session?.user?.email || ''));
-      const userData = { name, birthdate, birthTime, birthplace };
-      setName(userData.name);
-      setBirthdate(userData.birthdate);
-      setBirthTime(userData.birthTime);
-      setBirthplace(userData.birthplace);
+      const { name, validBirthDate, validBirthTime, birthplace, age } = await getUserData(encodeURIComponent(session?.user?.email || ''));
+      const userData = { name, validBirthDate, validBirthTime, birthplace, age };
+      setUserData(userData);
     };
     fetchUserData();
   }, [session?.user?.email]);
@@ -90,6 +87,7 @@ export default function page() {
       if (!summaryCardRef.current) {
         throw new Error('Summary card element not found');
       }
+      console.log(summaryCardRef.current)
 
       // Pre-load images before capturing
       const images = summaryCardRef.current.getElementsByTagName('img');
@@ -190,14 +188,20 @@ export default function page() {
       <div className='flex flex-col h-fit bg-starcansayblue justify-center items-center font-body md:flex-row md:items-start w-full md:min-h-fit'>
         <div className='mt-20 md:mt-28 flex flex-col text-white lg:mr-20 md:mr-10 items-center md:items-start'>
           <img src="https://storage.cloud.google.com/starcansay/img/sticker%20starcansay%20web-29%203.png" alt="starcansay sticker" width='253' height='179' className='md:-ml-11'/>
-          <p className='text-7xl -ml-2 mt-5 font-starcansay text-starcansaypink text-center md:text-left'>ชีวิต {name} <br/> ในวัย 34 ปี</p>
+          <p className='text-7xl -ml-2 mt-5 font-starcansay text-starcansaypink text-center md:text-left'>ชีวิต {userData?.name} <br/> ในวัย {userData?.age} ปี</p>
           <br/>
-          <p className='text-2xl text-center md:text-left font-thai'>เกิดวันที่ 20 ก.ย. 2540 <br/>เวลาเกิด 13.00 <br/>สถานที่เกิด เชียงใหม่</p>
+          <p className='text-2xl text-center md:text-left font-thai'>เกิดวันที่ {userData?.validBirthDate} <br/>เวลาเกิด {userData?.validBirthTime} <br/>สถานที่เกิด {userData?.birthplace}</p>
         </div>
         <div className='flex flex-col justify-center mx-5 mt-5 md:mt-20 mb-10 max-h-full w-[387px]'>
-          <div ref={summaryCardRef}>
-            <NewMoonCard handleGraphData={graphData}/>
-          </div>
+          {userData && graphData ? (
+            <div ref={summaryCardRef}>
+              <SummaryCard handleGraphData={graphData} userData={userData}/>
+            </div>
+          ) : (
+            <div className="flex justify-center items-center h-full">
+              <p className="text-white">Loading...</p>
+            </div>
+          )}
           <div className='flex justify-center gap-1 mt-4'>
             <button 
                 onClick={downloadImage}
@@ -256,7 +260,7 @@ export default function page() {
               <LineGraph 
                 onPointData={handlePointData} 
                 onGraphData={handleGraphData} 
-                handlePointData={pointData} 
+                handlePointData={pointData || 25}
                 username={session?.user?.email || ''}
                 onLoadingChange={setIsLoading}
               />

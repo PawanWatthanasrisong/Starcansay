@@ -36,23 +36,16 @@ export default function GraphReadBox({ handlePointData, handleGraphData }: Graph
   return (
     <div className='w-full flex flex-col items-center font-thai justify-center mt-5 text-base sm:text-lg'>
         <Card className='w-full sm:w-3/4 border-4 rounded-3xl border-starcansayblue bg-starcansayblue-background text-starcansayblue'>
-            <CardContent className='mt-5'>
-            <span className='font-bold font-starcansay text-3xl'>ตอนอายุ {xAxis} ปี</span>
-            {/* <span className='ml-5'>
-                {activePayload.map((entry: any, index: number) => 
-                    <span key={index} className='mr-5'>
-                        {entry.name}: {entry.value}
-                    </span>)}
-            </span> */}
-            <br/>
-            <br/>
-            <p id='lifestar-wording' className='text-center font-ibm-plex-sans-thai text-3xl'>
-                <b>{LifeStar(graphData, xAxis)?.wording}</b>
-            </p>
-            <br/>
-            <p id='lifestar-description'>
-                {LifeStar(graphData, xAxis)?.description}
-            </p>
+            <CardContent className='mt-5 relative'>
+                <span className='absolute top-0 left-5 font-bold font-starcansay text-3xl rounded-lg px-3 py-2 bg-white'>ตอนอายุ {xAxis} ปี</span>
+                <h2 className='text-center font-starcansay text-5xl mb-4'>"{LifeStar(graphData, xAxis)?.title}"</h2>
+                <p id='lifestar-wording' className='text-center font-ibm-plex-sans-thai text-3xl'>
+                    <b>ดาวชีวิตกำลังอยู่ใน{LifeStar(graphData, xAxis)?.wording}</b>
+                </p>
+                <br/>
+                <p id='lifestar-description'>
+                    {LifeStar(graphData, xAxis)?.description}
+                </p>
             </CardContent>
         </Card>
         <div className='flex flex-col md:flex-row  w-full sm:w-3/4 mt-3'>

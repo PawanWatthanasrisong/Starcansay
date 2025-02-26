@@ -1,139 +1,97 @@
-import { createClient } from '@supabase/supabase-js'
-import { google } from 'googleapis'
-import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js';
+import { google } from 'googleapis';
+import { NextResponse } from 'next/server';
+import { getStructuredData, getCleanData, getMovingAverage, getSlope } from './utils/calculateData';
+import { randomUUID } from 'crypto';
+
+interface ProcessedData {
+  xAxis: (number | null)[];
+  series1: (number | null)[];
+  series2: (number | null)[];
+  series3: (number | null)[];
+  slopeSeries1: { x: number; slope: number | null }[];
+  slopeSeries2: { x: number; slope: number | null }[];
+  slopeSeries3: { x: number; slope: number | null }[];
+}
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-)
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
 
 export async function POST(req: Request) {
-  try {
-    const { sheetEmail } = await req.json()
+    const { sheetEmail } = await req.json();
 
     // Initialize Google Sheets API
     const auth = new google.auth.GoogleAuth({
       keyFile: 'credentials.json',
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-    })
+    });
 
-    const sheets = google.sheets({ version: 'v4', auth })
+    const sheets = google.sheets({ version: 'v4', auth });
 
     // Fetch data from Google Sheet
-    const graphRawData = await sheets.spreadsheets.values.get({
-      spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: `${sheetEmail}!A:D`, // Use sheetId as sheet name
-    })
-
-    const userRawData = await sheets.spreadsheets.values.get({
+    const [graphRawData, userRawData] = await Promise.all([
+      sheets.spreadsheets.values.get({
         spreadsheetId: process.env.GOOGLE_SHEET_ID,
-        range: `${sheetEmail}!F:G`, // Use sheetId as sheet name
-      })
+        range: `${sheetEmail}!A:D`,
+      }),
+      sheets.spreadsheets.values.get({
+        spreadsheetId: process.env.GOOGLE_SHEET_ID,
+        range: `${sheetEmail}!F:G`,
+        valueRenderOption: 'UNFORMATTED_VALUE',
+      }),
+    ]);
 
-    const userData = userRawData.data.values || [];
-    const rows = graphRawData.data.values || [];
-
-    if (!Array.isArray(rows) || rows.length === 0) {
+    const graphRows = graphRawData.data.values || [];
+    const userRows = userRawData.data.values || [];
+    if (!Array.isArray(graphRows) || graphRows.length === 0 || !Array.isArray(userRows) || userRows.length === 0) {
       throw new Error('Invalid or empty data');
     }
-    const cleanRows = cleanData(rows);
-    const { xAxis, series1, series2, series3 } = processData(cleanRows);
-    const smoothSeries3 = movingAverage(series3, 1);
 
-    console.log([xAxis, series1, series2, series3, smoothSeries3]);
+    userRows[2][1] = convertSerialToDate(userRows[2][1]);
 
-    if (!rows || rows.length === 0) {
-      throw new Error('No data found in sheet')
+    console.log(userRows);
+
+    const useData = {
+      name: userRows[0][1],
+      birthPlace: userRows[1][1],
+      birthDate: userRows[2][1],
     }
 
-    // Process the data and update Supabase
-    // This will depend on your data structure
-    const processedData = processSheetData(rows)
+    const cleanGraphRows = getCleanData(graphRows);
+    const structuredData = await getStructuredData(cleanGraphRows);
 
-
-    // // Update Supabase
-    // const { error } = await supabase
-    //   .from('user_data')
-    //   .upsert(processedData)
-
-    // if (error) throw error
-
-    // // Update sheet status
-    // await supabase
-    //   .from('sheets')
-    //   .update({ 
-    //     status: 'success',
-    //     last_updated: new Date().toISOString()
-    //   })
-    //   .eq('id', sheetId)
-
-    // return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error updating sheet:', error)
-    
-    // Update sheet status to error
-    // await supabase
-    //   .from('sheets')
-    //   .update({ 
-    //     status: 'error',
-    //     last_updated: new Date().toISOString()
-    //   })
-    //   .eq('id', sheetId)
-
-    // return NextResponse.json(
-    //   { error: 'Failed to update sheet data' },
-    //   { status: 500 }
-    // )
-  }
-}
-
-function processSheetData(rows: any[]) {
-  // Process the sheet data according to your needs
-  // This is just an example
-  const [headers, ...dataRows] = rows
-  
-  return dataRows.map(row => {
-    const obj: any = {}
-    headers.forEach((header: string, index: number) => {
-      obj[header.toLowerCase()] = row[index]
-    })
-    return obj
-  })
-} 
-
-function processData(data: Array<Array<string>>){
-    const xAxis = data.map((row) => row[0]).slice(1,);
-    const series1 = data.map((row) => row[1]).slice(1,);
-    const series2 = data.map((row) => row[2]).slice(1,);
-    const series3 = data.map((row) => row[3]).slice(1,);
-    return { xAxis, series1, series2, series3}
-}
-
-function movingAverage(data: any, windowSize: number){
-  const result = [];
-  for (let i = 0; i < data.length; i++) {
-    let sum = 0;
-    let count = 0;
-    for (let j = Math.max(0, i - windowSize); j <= Math.min(data.length - 1, i + windowSize); j++) {
-      if (data[j] !== null && data[j] !== undefined && !isNaN(data[j])) {
-        sum += data[j];
-        count++;
-      }
+    const processedData = {
+      ...structuredData,
+      slopeSeries1: getSlope(structuredData.series1),
+      slopeSeries2: getSlope(structuredData.series2),
+      series3: getMovingAverage(structuredData.series3, 1),
+      slopeSeries3: getSlope(structuredData.series3),
     }
-    result.push(count > 0 ? sum / count : null);
-  }
-  return result;
+    const result = await updateToSupabase(processedData, sheetEmail, useData.name, useData.birthDate, useData.birthPlace)
+    return NextResponse.json({result}, { status: 200 });
+}
+
+const convertSerialToDate = (serial: number) => {
+  const milliseconds = (serial - 25569) * 86400 * 1000; // Convert to milliseconds
+  return new Date(milliseconds); // Create a new Date object
 };
 
-function cleanData(data: any[]): any[] {
-    return data.map(item => {
-      if (Array.isArray(item)) {
-        return cleanData(item); // Recursively clean nested arrays
-      }
-      if (item === '#N/A') {
-        return null;
-      }
-      const parsedNumber = parseFloat(item);
-      return isNaN(parsedNumber) ? item : parsedNumber;
-    });
+async function updateToSupabase(processedData: ProcessedData, sheetEmail: string, name: string, birthDate: string, birthPlace: string) {
+  const { data, error } = await supabase
+    .from('User')
+    .upsert({
+      id: randomUUID(),
+      email: sheetEmail,
+      data: processedData,
+      name: name,
+      birthdate: birthDate,
+      birthplace: birthPlace,
+      updatedAt: new Date().toISOString()
+    })
+    .select();
+
+  if (error) throw error;
+  return data;
 }

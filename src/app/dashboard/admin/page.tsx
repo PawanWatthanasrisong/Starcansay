@@ -5,13 +5,13 @@ import { redirect } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { useToast } from "@/components/hooks/use-toast"
 import { createClient } from '@/utils/supabase/client';
-import { Session, User } from '@supabase/supabase-js'
+import { Session } from '@supabase/supabase-js'
 
 interface SheetData {
   id: string
   email: string
   lastUpdated: string
-  status: 'pending' | 'success' | 'error'
+  status: 'pending' | 'success' | 'error' | 'done'
 }
 
 export default function AdminPage() {
@@ -24,19 +24,13 @@ export default function AdminPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log(session?.user.email)
       if (!session || session.user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-        console.log(session?.user.email)
-        console.log(process.env.NEXT_PUBLIC_ADMIN_EMAIL)
-        console.log('not admin');
         redirect('/graph')
       }
       setUser(session)
     })
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session)
     })
 
@@ -73,16 +67,23 @@ export default function AdminPage() {
         body: JSON.stringify({ sheetEmail }),
       })
 
+      console.log(response);
+
       if (!response.ok) {
         throw new Error('Failed to update sheet')
       }
+
+      setSheets(prevSheets => 
+        prevSheets.map(sheet => 
+          sheet.email === sheetEmail ? { ...sheet, status: 'done' } : sheet
+        )
+      );
 
       toast({
         title: "Success",
         description: "Sheet data updated successfully",
       })
       
-      // Refresh the sheets list
       await fetchSheets()
     } catch (error) {
       console.error('Failed to update sheet:', error)
@@ -91,6 +92,11 @@ export default function AdminPage() {
         description: "Failed to update sheet data",
         variant: "destructive",
       })
+      setSheets(prevSheets => 
+        prevSheets.map(sheet => 
+          sheet.email === sheetEmail ? { ...sheet, status: 'error' } : sheet
+        )
+      );
     } finally {
       setLoading(prev => ({ ...prev, [sheetEmail]: false }))
     }
@@ -121,6 +127,7 @@ export default function AdminPage() {
                       <span className={`px-2 py-1 rounded-full text-xs ${
                         sheet.status === 'success' ? 'bg-green-100 text-green-800' :
                         sheet.status === 'error' ? 'bg-red-100 text-red-800' :
+                        sheet.status === 'done' ? 'bg-blue-100 text-blue-800' :
                         'bg-yellow-100 text-yellow-800'
                       }`}>
                         {sheet.status}
