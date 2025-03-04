@@ -87,7 +87,6 @@ export default function page() {
       if (!summaryCardRef.current) {
         throw new Error('Summary card element not found');
       }
-      console.log(summaryCardRef.current)
 
       // Pre-load images before capturing
       const images = summaryCardRef.current.getElementsByTagName('img');

@@ -67,8 +67,6 @@ export default function AdminPage() {
         body: JSON.stringify({ sheetEmail }),
       })
 
-      console.log(response);
-
       if (!response.ok) {
         throw new Error('Failed to update sheet')
       }

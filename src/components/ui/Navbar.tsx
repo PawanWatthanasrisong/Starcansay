@@ -31,7 +31,7 @@ export default function Navbar() {
     <div className='bg-white py-2 border-b border-s-zinc-200 fixed w-full z-10 top-0'>
         <div className='flex items-center justify-between w-full max-w-full px-2'>
             <Link href='https://www.starcansay.com/' className='text-pink-400 font-medium text-xl flex items-center'>
-              <img src="https://storage.cloud.google.com/starcansay/img/starcansaylogo-31%203.png?authuser=1" className='w-[38px] h-[29px] mr-2'/>
+              <img src="https://storage.googleapis.com/starcansay/img/starcansaylogo-31%203.png" className='w-[38px] h-[29px] mr-2' alt='starcansay logo'/>
               <p className='font-chulanarak text-[36px] font-normal mb-1'>
                 Star Can Say.
               </p>

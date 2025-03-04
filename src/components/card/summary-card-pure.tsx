@@ -29,7 +29,7 @@ export default function SummaryCardPure({ name, status, lifeStar, luckStar, chal
         <Card className='flex flex-col w-full h-full rounded-3xl' >
             <CardHeader>
                 <CardTitle className='text-center flex flex-col items-center'>
-                    <img src="/images/starcansaylogo-31.png?authuser=1" width={144} alt="starcansay logo"/>
+                    <img src="https://storage.googleapis.com/starcansay/img/starcansaylogo-31%203.png" width={144} alt="starcansay logo"/>
                     <p className='font-starcansay text-starcansaypink text-[40px] lg:text-[32px]'>
                       {name}
                     </p>

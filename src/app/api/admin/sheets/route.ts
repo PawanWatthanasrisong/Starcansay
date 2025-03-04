@@ -14,8 +14,6 @@ export async function GET() {
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
     })
 
-    console.log(response.data.sheets);
-
     const sheetsList = response.data.sheets?.map(sheet => ({
       id: sheet.properties?.sheetId,
       email: sheet.properties?.title,

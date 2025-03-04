@@ -51,8 +51,6 @@ export async function POST(req: Request) {
 
     userRows[2][1] = convertSerialToDate(userRows[2][1]);
 
-    console.log(userRows);
-
     const useData = {
       name: userRows[0][1],
       birthPlace: userRows[1][1],
@@ -61,13 +59,12 @@ export async function POST(req: Request) {
 
     const cleanGraphRows = getCleanData(graphRows);
     const structuredData = await getStructuredData(cleanGraphRows);
-
     const processedData = {
       ...structuredData,
       slopeSeries1: getSlope(structuredData.series1),
       slopeSeries2: getSlope(structuredData.series2),
       series3: getMovingAverage(structuredData.series3, 1),
-      slopeSeries3: getSlope(structuredData.series3),
+      slopeSeries3: getSlope(getMovingAverage(structuredData.series3, 1)),
     }
     const result = await updateToSupabase(processedData, sheetEmail, useData.name, useData.birthDate, useData.birthPlace)
     return NextResponse.json({result}, { status: 200 });

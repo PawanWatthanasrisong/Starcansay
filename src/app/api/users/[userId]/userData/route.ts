@@ -47,6 +47,5 @@ const thaiBirthTime = (birthDate: Date): string | null => {
     if (!birthDate) return null;
     const birthTime = birthDate.toISOString().split('T')[1];
     const [hour, minute] = birthTime.split(':');
-    console.log(hour, minute);
     return `${hour}:${minute}`;
 }
