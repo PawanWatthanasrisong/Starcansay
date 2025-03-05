@@ -1,281 +1,90 @@
 'use client'
-import GraphReadBox from '@/components/box/GraphReadBox';
-import SummaryCard from '@/components/card/summary-card';
-import AgeDropDown from '@/components/dropdown/AgeDropDown';
+import { useState, useRef } from 'react'
+import { useAuth } from '@/hooks/useAuth'
+import { useUserData } from '@/hooks/useUserData'
+import type { GraphData } from '@/types/user'
 import LineGraph from '@/components/graph/LineGraph'
-import { redirect } from 'next/navigation';
-import React, {useState, useRef, useEffect} from 'react';
-import { Download, Share2, Loader2 } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import { createClient } from '@/utils/supabase/client';
-import type { Session, User } from '@supabase/supabase-js'
-import type GraphData from '@/types/graph';
+import GraphReadBox from '@/components/box/GraphReadBox'
+import SummaryCard from '@/components/card/summary-card'
+import ShareButtons from '@/components/graph/ShareButtons'
+import AgeDropDown from '@/components/dropdown/AgeDropDown'
+import { Loader2 } from 'lucide-react'
 
-const isMobile = () => {
-  if (typeof window === 'undefined') return false;
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
-  );
-};
-
-interface UserData {
-  name: string;
-  validBirthDate: string;
-  validBirthTime: string;
-  birthplace: string;
-  age: number;
-}
-
-export default function page() {
-  const [session, setSession] = useState<Session | null>(null);
-  const [pointData, setPointData] = useState<number | null>(null);
-  const [graphData, setGraphData] = useState<GraphData | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const summaryCardRef = useRef<HTMLDivElement>(null);
-  const [userData, setUserData] = useState<UserData | null>(null);
-
-  const supabase = createClient();
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        redirect('/')
-      }
-      setSession(session)
-    })
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
+export default function Page() {
+  const { session } = useAuth()
+  const { userData, isUserDataLoading } = useUserData(session?.user?.id)
+  
+  const [pointData, setPointData] = useState<number>(25)
+  const [graphData, setGraphData] = useState<GraphData | null>(null)
+  const [isGraphLoading, setIsGraphLoading] = useState(false)
+  
+  const summaryCardRef = useRef<HTMLDivElement>(null)
 
   const handlePointData = (data: number) => {
-    setPointData(data);
+    setPointData(data)
   }
 
-  const handleGraphData = (data: GraphData) => {  
-    setGraphData(data);
+  const handleGraphData = (data: GraphData) => {
+    setGraphData(data)
   }
 
-  const getUserData = async (userId: string) => {
-    const response = await fetch(`/api/users/${userId}/userData`, {
-      method: 'GET',
-    });
-    const result = await response.json();
-    return result;
+  const handleGraphLoadingChange = (isLoading: boolean) => {
+    setIsGraphLoading(isLoading)
   }
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const { name, validBirthDate, validBirthTime, birthplace, age } = await getUserData(encodeURIComponent(session?.user?.email || ''));
-      const userData = { name, validBirthDate, validBirthTime, birthplace, age };
-      setUserData(userData);
-    };
-    fetchUserData();
-  }, [session?.user?.email]);
-
-  const downloadImage = async () => {
-    try {
-      setIsDownloading(true);
-      
-      if (!summaryCardRef.current) {
-        throw new Error('Summary card element not found');
-      }
-
-      // Pre-load images before capturing
-      const images = summaryCardRef.current.getElementsByTagName('img');
-      await Promise.all(Array.from(images).map(img => { 
-        return new Promise((resolve, reject) => {
-          const newImg = new Image();
-          newImg.crossOrigin = 'anonymous'; // Enable CORS
-          newImg.onload = () => resolve(true);
-          newImg.onerror = reject;
-          newImg.src = img.src;
-        });
-      }));
-
-      const canvas = await html2canvas(summaryCardRef.current, {
-        scale: 2, // Better balance between quality and performance
-        logging: false,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-        onclone: (document, element) => {
-          // Ensure all images in cloned element have crossOrigin set
-          const clonedImages = element.getElementsByTagName('img');
-          for (const img of clonedImages) {
-            img.crossOrigin = 'anonymous';
-          }
-        }
-      });
-
-      const image = canvas.toDataURL('image/png', 1.0);
-      const link = document.createElement('a');
-      link.download = `starcansay-${Date.now()}.png`;
-      link.href = image;
-      link.click();
-    } catch (error) {
-      console.error('Failed to download image:', error);
-      // You might want to add a toast notification here
-    } finally {
-      setIsDownloading(false);
-    }
-  };
-
-  const shareToInstagram = async () => {
-    try {
-      setIsSharing(true);
-      
-      if (!summaryCardRef.current) {
-        throw new Error('Summary card element not found');
-      }
-
-      const canvas = await html2canvas(summaryCardRef.current, {
-        scale: 2,
-        logging: false,
-        useCORS: true,
-        backgroundColor: null,
-      });
-
-      // Convert canvas to blob
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob((blob) => {
-          if (blob) {
-            resolve(blob);
-          } else {
-            reject(new Error('Failed to create blob from canvas'));
-          }
-        }, 'image/png', 1.0);
-      });
-
-      // Create file from blob
-      const file = new File([blob], 'starcansay.png', { type: 'image/png' });
-
-      // Check if Web Share API is supported
-      if (navigator.share && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: 'My Starcansay Graph',
-          text: 'Check out my life graph from Starcansay!'
-        });
-      } else {
-        // Fallback for browsers that don't support sharing files
-        const blobUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = 'starcansay.png';
-        link.click();
-        URL.revokeObjectURL(blobUrl);
-        console.warn('Web Share API not supported');
-      }
-    } catch (error) {
-      console.error('Failed to share image:', error);
-      // You might want to add a toast notification here
-    } finally {
-      setIsSharing(false);
-    }
-  };
 
   return (
     <div className='w-full'>
-      <div className='flex flex-col h-fit bg-starcansayblue justify-center items-center font-body md:flex-row md:items-start w-full md:min-h-fit'>
-        <div className='mt-20 md:mt-28 flex flex-col text-white lg:mr-20 md:mr-10 items-center md:items-start'>
-          <img src="https://storage.cloud.google.com/starcansay/img/sticker%20starcansay%20web-29%203.png" alt="starcansay sticker" width='253' height='179' className='md:-ml-11'/>
-          <p className='text-7xl -ml-2 mt-5 font-starcansay text-starcansaypink text-center md:text-left'>ชีวิต {userData?.name} <br/> ในวัย {userData?.age} ปี</p>
-          <br/>
-          <p className='text-2xl text-center md:text-left font-thai'>เกิดวันที่ {userData?.validBirthDate} <br/>เวลาเกิด {userData?.validBirthTime} <br/>สถานที่เกิด {userData?.birthplace}</p>
-        </div>
-        <div className='flex flex-col justify-center mx-5 mt-5 md:mt-20 mb-10 max-h-full w-[387px]'>
-          {userData && graphData ? (
-            <div ref={summaryCardRef}>
-              <SummaryCard handleGraphData={graphData} userData={userData}/>
+      <div className='flex flex-col md:flex-row items-center justify-center h-full bg-starcansayblue'>
+        <div className='flex flex-col items-center justify-center mx-5 mt-5 md:mt-28 mb-10 max-h-full aspect-[1080/1920]'>
+          {isUserDataLoading || isGraphLoading ? (
+            <div className="flex items-center justify-center h-[500px] w-full">
+              <Loader2 className="h-8 w-8 animate-spin text-white" />
             </div>
           ) : (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-white">Loading...</p>
+            <div ref={summaryCardRef}>
+              <SummaryCard 
+                handleGraphData={graphData as GraphData} 
+                userData={userData || {
+                  name: "",
+                  validBirthDate: "",
+                  validBirthTime: "",
+                  birthplace: "",
+                  age: 0
+                }} 
+              />
             </div>
           )}
-          <div className='flex justify-center gap-1 mt-4'>
-            <button 
-                onClick={downloadImage}
-                disabled={isDownloading}
-                className="disabled:opacity-50"
-                title="Download image"
-                type="button"
-              >
-              {isDownloading ? (
-                <Loader2 className='text-white animate-spin' />
-              ) : (
-                <Download className='text-white'/>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={shareToInstagram}
-              disabled={isSharing}
-              className="disabled:opacity-50 relative group"
-              title={isMobile() ? "Share to Instagram" : "Share (works best on mobile)"}
-            >
-              {isSharing ? (
-                <Loader2 className='text-white animate-spin' />
-              ) : (
-                <>
-                  <Share2 className='text-white'/>
-                  {!isMobile() && (
-                    <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                      Works best on mobile
-                    </span>
-                  )}
-                </>
-              )}
-            </button>
-          </div>
+          <ShareButtons 
+            summaryCardRef={summaryCardRef}
+            isDataLoading={isUserDataLoading || isGraphLoading}
+            hasData={!!graphData && !!userData}
+          />
         </div>
-      </div>
-      {/* Main Content */}
-      <main className='flex flex-col items-center font-body'>
-        {/* Header with Title and Dropdown */}
-        <div className='flex items-center mt-10 justify-center md:justify-between w-3/4'>
-          <p className='md:ml-5  text-starcansayblue'>
-            <span className='text-5xl font-starcansay'>
-              นี่คือกราฟ 100 ปี ของคุณ !
-            </span>
-            <br/>
-            <span className='text-2xl font-thai'>
-              สามารถขยับเพื่อดูว่าแต่ละช่วงเป็นยังไงได้เลย
-            </span>
-          </p>
-        </div>
-
-        {/* Graph and ReadBox Section */}
-          <section className='flex flex-col items-center mt-10 w-full'>
-            <div className='relative w-full'>
+        <div className='flex flex-col'>
+          <div className='w-full sm:w-[593.2px] md:max-w-[1023px] lg:min-w-[1023px] bg-white rounded-2xl p-3 m-3'>
+            <div className='flex items-center justify-center relative'>
+              <div className='flex items-center justify-center w-full'>
+                <AgeDropDown handlePointData={pointData} onPointData={handlePointData} />
+              </div>
+              <div className="flex justify-center w-3/5">
+                <h1 className='text-starcansaypink font-thai font-semibold text-3xl'>กราฟชีวิต</h1>
+              </div>
+            </div>
+            <div className='flex items-center justify-center'>
               <LineGraph 
                 onPointData={handlePointData} 
                 onGraphData={handleGraphData} 
-                handlePointData={pointData || 25}
-                username={session?.user?.email || ''}
-                onLoadingChange={setIsLoading}
+                handlePointData={pointData} 
+                username={session?.user?.id || ''}
+                onLoadingChange={handleGraphLoadingChange}
               />
-              {!isLoading && (
-                <div className='absolute top-4 right-[15%]'>
-                  <AgeDropDown handlePointData={pointData || 25} onPointData={handlePointData}/>
-                </div>
-              )}
             </div>
-
-            {/* Graph ReadBox */}
-            <div className='mb-5 w-full mx-5'>
-              <GraphReadBox handlePointData={pointData || '25'} handleGraphData={graphData} />
-            </div>
-          </section>
-      </main>
+          </div>
+          <div>
+            <GraphReadBox handlePointData={pointData} handleGraphData={graphData} />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
