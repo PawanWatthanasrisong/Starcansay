@@ -195,7 +195,6 @@ export default function LineGraph({ onPointData, onGraphData, handlePointData, u
               <XAxis 
                 dataKey='age'
                 name='อายุ'
-                unit='ปี'
                 stroke="#4E6AB3"
                 axisLine={{ strokeWidth: 2 }}
                 tickLine={{ strokeWidth: 2 }}
