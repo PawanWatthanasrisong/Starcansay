@@ -1,8 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { Button } from '../ui/button';
-import { FileX, Grid } from 'lucide-react';
 import ChallengeStar from '../box/helpers/ChallengeStarFunction';
 import LuckStar from '../box/helpers/LuckStarFunction';
 import LifeStar from '../box/helpers/LifeStarFunction';
@@ -42,7 +40,7 @@ export default function LineGraph({ onPointData, onGraphData, handlePointData, u
   const [isClicked, setIsClicked] = useState<boolean>(false);
   const [isActive, setIsActive] = useState<boolean>(false);
   const [width, setWidth] = useState<number>(0);
-  const [graphData, setGraphData] = useState<GraphData>({ xAxis: [], series1: [], series2: [], series3: [], slopeSeries1: [] });
+  const [graphData, setGraphData] = useState<GraphData>({ xAxis: [], series1: [], series2: [], series3: [], slopeSeries1: [], slopeSeries2: [], slopeSeries3: [] });
   const [graphHeight, setGraphHeight] = useState<number>(400);
   const [graphWidth, setGraphWidth] = useState<string>('100%');
   const [isLoading, setIsLoading] = useState<boolean>(true);

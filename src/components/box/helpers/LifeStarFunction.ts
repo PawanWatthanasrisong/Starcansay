@@ -1,4 +1,6 @@
-export default function LifeStar (graphdata: any, xAxis: number) {
+import type GraphData from '@/types/graph';
+
+export default function LifeStar (graphdata: GraphData, xAxis: number) {
     let data = graphdata.series1[xAxis];
     let data_1 = graphdata.series1[xAxis + 1];
     let slope = graphdata.slopeSeries1[xAxis].slope;

@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     const [graphRawData, userRawData] = await Promise.all([
       sheets.spreadsheets.values.get({
         spreadsheetId: process.env.GOOGLE_SHEET_ID,
-        range: `${sheetEmail}!A:D`,
+        range: `${sheetEmail}!A2:D`,
       }),
       sheets.spreadsheets.values.get({
         spreadsheetId: process.env.GOOGLE_SHEET_ID,
@@ -53,7 +53,6 @@ export async function POST(req: Request) {
       birthPlace: userRows[1][1],
       birthDate: userRows[2][1],
     }
-
     const cleanGraphRows = getCleanData(graphRows);
     const structuredData = await getStructuredData(cleanGraphRows);
     const processedData = {
