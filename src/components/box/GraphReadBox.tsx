@@ -5,11 +5,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import LifeStar from './helpers/LifeStarFunction';
 import LuckStar from './helpers/LuckStarFunction';
 import ChallengeStar from './helpers/ChallengeStarFunction';
-import { Car } from 'lucide-react';
+import type GraphData from '@/types/graph';
 
 interface GraphReadBoxProps {
     handlePointData: any
-    handleGraphData: any
+    handleGraphData: GraphData
 }
 
 

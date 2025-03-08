@@ -1,8 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
 import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
 import { getStructuredData, getCleanData, getMovingAverage, getSlope } from './utils/calculateData';
 import { randomUUID } from 'crypto';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 interface ProcessedData {
   xAxis: (number | null)[];
@@ -13,11 +15,6 @@ interface ProcessedData {
   slopeSeries2: { x: number; slope: number | null }[];
   slopeSeries3: { x: number; slope: number | null }[];
 }
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
 
 export async function POST(req: Request) {
     const { sheetEmail } = await req.json();
@@ -34,7 +31,7 @@ export async function POST(req: Request) {
     const [graphRawData, userRawData] = await Promise.all([
       sheets.spreadsheets.values.get({
         spreadsheetId: process.env.GOOGLE_SHEET_ID,
-        range: `${sheetEmail}!A:D`,
+        range: `${sheetEmail}!A2:D`,
       }),
       sheets.spreadsheets.values.get({
         spreadsheetId: process.env.GOOGLE_SHEET_ID,
@@ -56,15 +53,14 @@ export async function POST(req: Request) {
       birthPlace: userRows[1][1],
       birthDate: userRows[2][1],
     }
-
     const cleanGraphRows = getCleanData(graphRows);
     const structuredData = await getStructuredData(cleanGraphRows);
     const processedData = {
       ...structuredData,
       slopeSeries1: getSlope(structuredData.series1),
       slopeSeries2: getSlope(structuredData.series2),
-      series3: getMovingAverage(structuredData.series3, 1),
-      slopeSeries3: getSlope(getMovingAverage(structuredData.series3, 1)),
+      series3: getMovingAverage(structuredData.series3, 3),
+      slopeSeries3: getSlope(getMovingAverage(structuredData.series3, 3)),
     }
     const result = await updateToSupabase(processedData, sheetEmail, useData.name, useData.birthDate, useData.birthPlace)
     return NextResponse.json({result}, { status: 200 });
@@ -76,19 +72,24 @@ const convertSerialToDate = (serial: number) => {
 };
 
 async function updateToSupabase(processedData: ProcessedData, sheetEmail: string, name: string, birthDate: string, birthPlace: string) {
-  const { data, error } = await supabase
-    .from('User')
-    .upsert({
-      id: randomUUID(),
-      email: sheetEmail,
-      data: processedData,
+  const { data } = await prisma.user.upsert({
+    where: { email: sheetEmail },
+    update: {
+      data: JSON.stringify(processedData),
       name: name,
       birthdate: birthDate,
       birthplace: birthPlace,
       updatedAt: new Date().toISOString()
-    })
-    .select();
+    },
+    create: {
+      id: randomUUID(),
+      email: sheetEmail,
+      data: JSON.stringify(processedData),
+      name: name,
+      birthdate: birthDate,
+      birthplace: birthPlace,
+    }
+  });
 
-  if (error) throw error;
   return data;
 }

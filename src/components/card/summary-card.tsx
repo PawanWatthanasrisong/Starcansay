@@ -1,6 +1,6 @@
 'use client'
-import React, { useRef, useState } from 'react'
-import SummaryCardPure from './summary-card-pure';
+import React from 'react'
+import SummaryCardPure from "./summary-card-pure"
 import type GraphData from '@/types/graph';
 import LifeStar from '../box/helpers/LifeStarFunction';
 import LuckStar from '../box/helpers/LuckStarFunction';
@@ -15,12 +15,15 @@ interface SummaryCardProps {
     birthplace: string;
     age: number;
   }
-  ;
 }
 
 export default function SummaryCard({ handleGraphData, userData }: SummaryCardProps) {
   const xAxis = userData.age; // Default to 0 if age is null
   const graphData = handleGraphData;
+
+  if (!graphData) {
+    return null;
+  }
 
   const lifeStar = {
     title: LifeStar(graphData, xAxis).title,
