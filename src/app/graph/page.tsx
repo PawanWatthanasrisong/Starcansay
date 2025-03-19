@@ -8,8 +8,9 @@ import GraphReadBox from '@/components/box/GraphReadBox'
 import SummaryCard from '@/components/card/summary-card'
 import ShareButtons from '@/components/graph/ShareButtons'
 import AgeDropDown from '@/components/dropdown/AgeDropDown'
-import { Loader2 } from 'lucide-react'
 import SummaryCardPureSkeleton from '@/components/card/summary-card-pure-skeleton'
+import Image from 'next/image'
+
 
 export default function Page() {
   const { session } = useAuth()
@@ -37,7 +38,7 @@ export default function Page() {
     <div className='w-full'>
       <div className='flex flex-col h-fit bg-starcansayblue justify-center items-center font-body md:flex-row md:items-start w-full md:min-h-screen'>
         <div className='mt-20 md:mt-28 flex flex-col text-white lg:mr-20 md:mr-10 items-center md:items-start'>
-          <img src="https://storage.cloud.google.com/starcansay/img/sticker%20starcansay%20web-29%203.png" alt="starcansay sticker" width='253' height='179' className='md:-ml-11'/>
+          <Image src="/images/sticker-starcansay-web-29-3.png" alt="starcansay sticker" width='253' height='179' className='md:-ml-11'/>
           {userData?.name && userData?.age ? (
             <p className='text-7xl -ml-2 mt-5 font-starcansay text-starcansaypink text-center md:text-left'>ชีวิต {userData.name} <br/> ในวัย {userData.age} ปี</p>
           ) : (

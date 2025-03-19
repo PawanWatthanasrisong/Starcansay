@@ -4,8 +4,10 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-
-export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function GET(
+    req: NextRequest, 
+    { params }: { params: Promise<{ userId: string }> }
+) {
     const { userId } = await params;
     try {
         const response = await prisma.user.findUnique({

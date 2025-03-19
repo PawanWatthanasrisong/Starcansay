@@ -1,11 +1,12 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import ChallengeStar from '../box/helpers/ChallengeStarFunction';
 import LuckStar from '../box/helpers/LuckStarFunction';
 import LifeStar from '../box/helpers/LifeStarFunction';
 import type { CategoricalChartState } from 'recharts/types/chart/types';
 import type GraphData from '@/types/graph';
+import { useGetChartData } from '@/hooks/useGetChartData';
 
 interface LineGraphProps {
   onPointData: (data: number) => void;
@@ -35,15 +36,19 @@ interface TooltipData {
 }
 
 export default function LineGraph({ onPointData, onGraphData, handlePointData, username, onLoadingChange }: LineGraphProps) {
-  const [chartData, setChartData] = useState<GraphData[]>([]); // Changed to 'any[]' to match the expected data structure
+  const { chartData, graphData, isLoading } = useGetChartData(username);
   const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
   const [isClicked, setIsClicked] = useState<boolean>(false);
   const [isActive, setIsActive] = useState<boolean>(false);
   const [width, setWidth] = useState<number>(0);
-  const [graphData, setGraphData] = useState<GraphData>({ xAxis: [], series1: [], series2: [], series3: [], slopeSeries1: [], slopeSeries2: [], slopeSeries3: [] });
   const [graphHeight, setGraphHeight] = useState<number>(400);
   const [graphWidth, setGraphWidth] = useState<string>('100%');
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (graphData) {
+      onGraphData(graphData);
+    }
+  }, [graphData, onGraphData]);
 
   useEffect(() => {
     if (onLoadingChange) {
@@ -88,6 +93,8 @@ export default function LineGraph({ onPointData, onGraphData, handlePointData, u
 
   const entrySwitch = (name: string, age: number) => {
     let result: string | undefined; // Specify the type
+    if (!graphData) return '';
+    
     switch (name) {
       case 'ดาวชีวิต':
         result = LifeStar(graphData, age).wording;
@@ -122,36 +129,6 @@ export default function LineGraph({ onPointData, onGraphData, handlePointData, u
 
     return null;
   };
-
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!username) return;
-
-      setIsLoading(true);
-      try {
-        const response = await fetch(`/api/users/${encodeURIComponent(username)}/chartData`);
-        if (!response.ok) throw new Error(`Error: ${response.status} ${response.statusText}`);
-
-        const result = await response.json();
-        const formattedData = result.xAxis.map((x: number, index: number) => ({
-          age: x,
-          series1: result.series1[index],
-          series2: result.series2[index],
-          series3: result.series3[index],
-        }));
-        setChartData(formattedData);
-        setGraphData(result);
-        onGraphData(result);
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [username]);
 
   useEffect(() => {
     setWidth(window.innerWidth);

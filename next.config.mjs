@@ -1,6 +1,8 @@
- // Start of Selection
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    domains: ['storage.googleapis.com'],
+  },
   async headers() {
     return [
       {

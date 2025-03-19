@@ -38,7 +38,7 @@ export default function GraphReadBox({ handlePointData, handleGraphData }: Graph
         <Card className='w-full sm:w-3/4 border-4 rounded-3xl border-starcansayblue bg-starcansayblue-background text-starcansayblue'>
             <CardContent className='mt-5 relative'>
                 <span className='absolute top-0 left-5 font-bold font-starcansay text-3xl rounded-lg px-3 py-2 bg-white'>ตอนอายุ {xAxis} ปี</span>
-                <h2 className='text-center font-starcansay text-5xl mb-4'>"{LifeStar(graphData, xAxis)?.title}"</h2>
+                <h2 className='text-center font-starcansay text-5xl mb-4'>{`"${LifeStar(graphData, xAxis)?.title}"`}</h2>
                 <p id='lifestar-wording' className='text-center font-ibm-plex-sans-thai text-3xl'>
                     <b>ดาวชีวิตกำลังอยู่ใน{LifeStar(graphData, xAxis)?.wording}</b>
                 </p>

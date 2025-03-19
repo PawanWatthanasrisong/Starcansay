@@ -1,11 +1,11 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from "@/components/ui/button"
 import { redirect } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { useToast } from "@/components/hooks/use-toast"
 import { createClient } from '@/utils/supabase/client';
-import { Session } from '@supabase/supabase-js'
+import type { Session } from '@supabase/supabase-js'
 
 interface SheetData {
   id: string
@@ -19,29 +19,9 @@ export default function AdminPage() {
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({})
   const [user, setUser] = useState<Session | null>(null);
   const { toast } = useToast()
-
   const supabase = createClient();
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session || session.user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-        redirect('/graph')
-      }
-      setUser(session)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  useEffect(() => {
-    fetchSheets()
-  }, [])
-
-  const fetchSheets = async () => {
+  const fetchSheets = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/sheets')
       const data = await response.json()
@@ -54,7 +34,32 @@ export default function AdminPage() {
         variant: "destructive",
       })
     }
-  }
+  }, [toast])
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || session.user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+        redirect('/graph');
+      }
+      setUser(session);
+    };
+
+    fetchSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]); // Added supabase.auth as a dependency
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchSheets();
+    };
+    fetchData();
+  }, [fetchSheets]);
 
   const updateSheet = async (sheetEmail: string) => {
     setLoading(prev => ({ ...prev, [sheetEmail]: true }))
