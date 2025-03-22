@@ -50,5 +50,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Callback error:', error);
     return NextResponse.redirect(new URL('/', request.url));
+  } finally {
+    await prisma.$disconnect();
   }
 } 
