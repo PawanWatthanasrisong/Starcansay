@@ -2,9 +2,7 @@ import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
 import { getStructuredData, getCleanData, getMovingAverage, getSlope } from './utils/calculateData';
 import { randomUUID } from 'crypto';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 interface ProcessedData {
   xAxis: (number | null)[];
