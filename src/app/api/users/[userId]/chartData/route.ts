@@ -1,11 +1,21 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import prisma from '@/lib/prisma';
+import { createClient } from "@/utils/supabase/server";
 
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ userId: string }> }
 ) {
+    
+    const supabase = await createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session?.user.user_metadata.role !== 'admin') {
+          return NextResponse.json({ message: 'Unauthorized'}, { status: 401});
+    }
+
+
     const { userId } = await params;
 
     if (!userId) {

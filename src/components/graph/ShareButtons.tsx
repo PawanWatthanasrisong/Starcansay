@@ -1,7 +1,8 @@
 'use client'
 import { useState, type RefObject } from 'react'
 import { Download, Share2, Loader2 } from 'lucide-react'
-import { downloadImage, shareToInstagram, isMobile } from '@/utils/imageShare'
+import { downloadImage, shareToInstagram } from '@/utils/imageShare'
+import { isMobile } from '@/utils/isMobile'
 
 interface ShareButtonsProps {
   summaryCardRef: RefObject<HTMLDivElement>

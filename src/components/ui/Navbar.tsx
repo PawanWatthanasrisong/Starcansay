@@ -30,7 +30,7 @@ export default function Navbar() {
   }, [supabase.auth]); // Added supabase.auth to the dependency array
 
   return (
-    <div className='bg-white py-2 border-b border-s-zinc-200 fixed w-full z-10 top-0'>
+    <div className='bg-white py-2 border-b border-s-zinc-200 w-full sticky top-0 z-50'>
         <div className='flex items-center justify-between w-full max-w-full px-2'>
             <Link href='https://www.starcansay.com/' className='text-pink-400 font-medium text-xl flex items-center'>
               <Image src="/images/starcansaylogo-31-3.png" width={38} height={29} className='mr-2' alt='starcansay logo'/>

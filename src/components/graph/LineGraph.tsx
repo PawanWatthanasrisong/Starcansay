@@ -7,13 +7,14 @@ import LifeStar from '../box/helpers/LifeStarFunction';
 import type { CategoricalChartState } from 'recharts/types/chart/types';
 import type GraphData from '@/types/graph';
 import { useGetChartData } from '@/hooks/useGetChartData';
+import { isMobile } from '@/utils/isMobile';
 
 interface LineGraphProps {
   onPointData: (data: number) => void;
   onGraphData: (data: GraphData) => void;
   handlePointData: number;
-  username: string;
   onLoadingChange?: (isLoading: boolean) => void;
+  userEmail?: string;
 }
 
 interface payLoad {
@@ -35,8 +36,8 @@ interface TooltipData {
   activePayload: activePayload[];
 }
 
-export default function LineGraph({ onPointData, onGraphData, handlePointData, username, onLoadingChange }: LineGraphProps) {
-  const { chartData, graphData, isLoading } = useGetChartData(username);
+export default function LineGraph({ onPointData, onGraphData, handlePointData, onLoadingChange, userEmail }: LineGraphProps) {
+  const { chartData, graphData, isLoading } = useGetChartData(userEmail);
   const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
   const [isClicked, setIsClicked] = useState<boolean>(false);
   const [isActive, setIsActive] = useState<boolean>(false);
@@ -158,7 +159,7 @@ export default function LineGraph({ onPointData, onGraphData, handlePointData, u
   return (
     <div className='flex items-center justify-center'>
       {chartData.length > 0 && (
-        <div className='w-full sm:w-3/4 text-sm sm:text-lg'>
+        <div className='w-full text-sm sm:text-lg'>
           <ResponsiveContainer width={graphWidth} height={graphHeight} className='w-full flex justify-center items-center bg-starcansayred-background rounded-3xl border-4 border-starcansayblue'>
             <LineChart 
               data={chartData}
@@ -177,7 +178,7 @@ export default function LineGraph({ onPointData, onGraphData, handlePointData, u
                 tickLine={{ strokeWidth: 2 }}
                 tick={{ fontSize: 20, fontWeight: 'bold' }}
                 tickMargin={10}
-                interval={4}
+                interval={9}
                 className='font-starcansay'
               />
               <YAxis hide={true} />
@@ -189,7 +190,7 @@ export default function LineGraph({ onPointData, onGraphData, handlePointData, u
                 formatter={(value) => <span style={{ color: '#4E6AB3' }} className='mr-10'>{value}</span>}
                 align='left'
               />
-              <Tooltip content={<CustomTooltip payload={tooltipData?.activePayload ?? []} />} active={isActive} cursor={{ stroke: '#F4AACA', strokeWidth: 4 }} />
+              <Tooltip content={<CustomTooltip payload={tooltipData?.activePayload ?? []} />} active={isActive && !isMobile} cursor={{ stroke: '#F4AACA', strokeWidth: 4 }}/>
               <CartesianGrid strokeDasharray="0 0" className='bg-white' horizontal={false} horizontalPoints={[0, 150]} stroke='white' strokeWidth={2} />
               <ReferenceLine x={tooltipData?.activeTooltipIndex ?? -1} stroke="#F4AACA" strokeWidth={4} opacity='100%' />
               <Line 

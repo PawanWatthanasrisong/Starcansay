@@ -1,31 +1,35 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import prisma from '@/lib/prisma';
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from '@/utils/supabase/server';
 
-export async function GET(
-    req: NextRequest, 
-    { params }: { params: Promise<{ userId: string }> }
-) {
-    
-    const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session?.user.user_metadata.role !== 'admin') {
-          return NextResponse.json({ message: 'Unauthorized'}, { status: 401});
-    }
-
-    const { userId } = await params;
+export async function GET(req: NextRequest) {
     try {
+        const supabase = await createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!session?.user?.email) {
+            return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+        }
+
+        const email = session.user.email;
+
+        // Get user data
         const response = await prisma.user.findUnique({
-            where: { email: userId },
-            select: { name: true, birthdate: true, birthplace: true },
+            where: { email },
+            select: { 
+                name: true, 
+                birthdate: true, 
+                birthplace: true,
+                data: true 
+            },
         });
 
         if (!response) {
             return NextResponse.json({ message: 'User not found' }, { status: 404 });
         }
-        const { name, birthplace, birthdate } = response;
+
+        const { name, birthplace, birthdate, data } = response;
 
         const validBirthDate = birthdate ? thaiBirthdate(birthdate) : null;
         const validBirthTime = birthdate ? thaiBirthTime(birthdate) : null;
@@ -33,7 +37,20 @@ export async function GET(
         // Calculate age
         const age = response.birthdate ? new Date().getFullYear() - response.birthdate.getFullYear() : null;
 
-        return NextResponse.json({ name, validBirthDate, validBirthTime, birthplace, age }, { status: 200 });
+        // Parse chart data if it exists
+        let chartData = null;
+        if (data) {
+            try {
+                chartData = JSON.parse(data);
+            } catch (parseError) {
+                console.error('Error parsing JSON data:', parseError);
+            }
+        }
+
+        return NextResponse.json({ 
+            userData: { name, validBirthDate, validBirthTime, birthplace, age },
+            chartData
+        }, { status: 200 });
     } catch (error) {
         console.error('Error fetching user data:', error);
         return NextResponse.json({ message: "Internal server error" }, { status: 500 });
@@ -57,4 +74,4 @@ const thaiBirthTime = (birthDate: Date): string | null => {
     const birthTime = birthDate.toISOString().split('T')[1];
     const [hour, minute] = birthTime.split(':');
     return `${hour}:${minute}`;
-}
+} 

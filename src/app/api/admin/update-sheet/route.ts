@@ -15,6 +15,7 @@ interface ProcessedData {
 }
 
 export async function POST(req: Request) {
+  try {
     const { sheetEmail } = await req.json();
 
     // Initialize Google Sheets API
@@ -40,6 +41,8 @@ export async function POST(req: Request) {
 
     const graphRows = graphRawData.data.values || [];
     const userRows = userRawData.data.values || [];
+
+
     if (!Array.isArray(graphRows) || graphRows.length === 0 || !Array.isArray(userRows) || userRows.length === 0) {
       throw new Error('Invalid or empty data');
     }
@@ -51,17 +54,33 @@ export async function POST(req: Request) {
       birthPlace: userRows[1][1],
       birthDate: userRows[2][1],
     }
+
     const cleanGraphRows = getCleanData(graphRows);
+
     const structuredData = await getStructuredData(cleanGraphRows);
+
+    // Apply moving average to smooth out null values
+    const smoothedSeries1 = getMovingAverage(structuredData.series1, 3);
+    const smoothedSeries2 = getMovingAverage(structuredData.series2, 3);
+    const smoothedSeries3 = getMovingAverage(structuredData.series3, 3);
+
     const processedData = {
-      ...structuredData,
-      slopeSeries1: getSlope(structuredData.series1),
-      slopeSeries2: getSlope(structuredData.series2),
-      series3: getMovingAverage(structuredData.series3, 3),
-      slopeSeries3: getSlope(getMovingAverage(structuredData.series3, 3)),
+      xAxis: structuredData.xAxis,
+      series1: smoothedSeries1,
+      series2: smoothedSeries2,
+      series3: smoothedSeries3,
+      slopeSeries1: getSlope(smoothedSeries1),
+      slopeSeries2: getSlope(smoothedSeries2),
+      slopeSeries3: getSlope(smoothedSeries3),
     }
+
     const result = await updateToSupabase(processedData, sheetEmail, useData.name, useData.birthDate, useData.birthPlace)
+
     return NextResponse.json({result}, { status: 200 });
+  } catch (error) {
+    console.error('Error processing sheet data:', error);
+    return NextResponse.json({ error: 'Failed to process sheet data' }, { status: 500 });
+  }
 }
 
 const convertSerialToDate = (serial: number) => {
@@ -70,24 +89,29 @@ const convertSerialToDate = (serial: number) => {
 };
 
 async function updateToSupabase(processedData: ProcessedData, sheetEmail: string, name: string, birthDate: string, birthPlace: string) {
-  const { data } = await prisma.user.upsert({
-    where: { email: sheetEmail },
-    update: {
-      data: JSON.stringify(processedData),
-      name: name,
-      birthdate: birthDate,
-      birthplace: birthPlace,
-      updatedAt: new Date().toISOString()
-    },
-    create: {
-      id: randomUUID(),
-      email: sheetEmail,
-      data: JSON.stringify(processedData),
-      name: name,
-      birthdate: birthDate,
-      birthplace: birthPlace,
-    }
-  });
+  try {
+    const { data } = await prisma.user.upsert({
+      where: { email: sheetEmail },
+      update: {
+        data: JSON.stringify(processedData),
+        name: name,
+        birthdate: birthDate,
+        birthplace: birthPlace,
+        updatedAt: new Date().toISOString()
+      },
+      create: {
+        id: randomUUID(),
+        email: sheetEmail,
+        data: JSON.stringify(processedData),
+        name: name,
+        birthdate: birthDate,
+        birthplace: birthPlace,
+      }
+    });
 
-  return data;
+    return data;
+  } catch (error) {
+    console.error('Error updating database:', error);
+    throw error;
+  }
 }
