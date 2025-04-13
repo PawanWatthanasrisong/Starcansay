@@ -190,7 +190,7 @@ export default function LineGraph({ onPointData, onGraphData, handlePointData, o
                 formatter={(value) => <span style={{ color: '#4E6AB3' }} className='mr-10'>{value}</span>}
                 align='left'
               />
-              <Tooltip content={<CustomTooltip payload={tooltipData?.activePayload ?? []} />} active={isActive && !isMobile} cursor={{ stroke: '#F4AACA', strokeWidth: 4 }}/>
+              <Tooltip content={<CustomTooltip payload={tooltipData?.activePayload ?? []} />} active={isActive && !isMobile()} cursor={{ stroke: '#F4AACA', strokeWidth: 4 }}/>
               <CartesianGrid strokeDasharray="0 0" className='bg-white' horizontal={false} horizontalPoints={[0, 150]} stroke='white' strokeWidth={2} />
               <ReferenceLine x={tooltipData?.activeTooltipIndex ?? -1} stroke="#F4AACA" strokeWidth={4} opacity='100%' />
               <Line 

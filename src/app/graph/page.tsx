@@ -33,7 +33,7 @@ export default function Page() {
   }
 
   return (
-    <div className='w-full'>
+    <div className='w-full overflow-y-auto'>
       <div className='flex flex-col h-fit bg-starcansayblue justify-center items-center font-body md:flex-row md:items-start w-full md:min-h-screen'>
         <div className='mt-20 md:mt-28 flex flex-col text-white lg:mr-20 md:mr-10 items-center md:items-start'>
           <Image src="/images/sticker-starcansay-web-29-3.png" alt="starcansay sticker" width='253' height='179' className='md:-ml-11'/>
@@ -74,7 +74,7 @@ export default function Page() {
         </div>
       </div>
       {/* Main Content */}
-      <main className='flex flex-col items-center font-body'>
+      <main className='flex flex-col items-center font-body bg-white'>
         {/* Header with Title and Dropdown */}
         <div className='flex items-center mt-10 justify-center md:justify-start w-full max-w-[1180px]'>
           <p className='md:ml-5  text-starcansayblue'>

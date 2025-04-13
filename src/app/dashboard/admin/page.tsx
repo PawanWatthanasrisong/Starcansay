@@ -103,9 +103,9 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 mt-10">
-      <h1 className="text-3xl font-bold mb-6 font-thai">Admin Dashboard</h1>
-      
+    <div className="w-full h-screen overflow-y-auto">
+      <div className="container mx-auto p-6">
+        <h1 className="text-3xl font-bold font-thai">Admin Dashboard</h1>
       <div className="bg-white rounded-lg shadow">
         <div className="p-6">
           <div className="overflow-x-auto">
@@ -158,6 +158,7 @@ export default function AdminPage() {
             </table>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
-import { getStructuredData, getCleanData, getMovingAverage, getSlope } from './utils/calculateData';
+import { getStructuredData, getCleanData, getMovingAverage, getSlope, getSmartMovingAverage } from './utils/calculateData';
 import { randomUUID } from 'crypto';
 import prisma from '@/lib/prisma';
 
@@ -59,10 +59,10 @@ export async function POST(req: Request) {
 
     const structuredData = await getStructuredData(cleanGraphRows);
 
-    // Apply moving average to smooth out null values
-    const smoothedSeries1 = getMovingAverage(structuredData.series1, 3);
-    const smoothedSeries2 = getMovingAverage(structuredData.series2, 3);
-    const smoothedSeries3 = getMovingAverage(structuredData.series3, 3);
+    // Apply smart moving average based on series characteristics
+    const smoothedSeries1 = getSmartMovingAverage(structuredData.series1, 3);
+    const smoothedSeries2 = getSmartMovingAverage(structuredData.series2, 3);
+    const smoothedSeries3 = getSmartMovingAverage(structuredData.series3, 3, true);
 
     const processedData = {
       xAxis: structuredData.xAxis,

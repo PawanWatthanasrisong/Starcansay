@@ -47,6 +47,11 @@ async function getStructuredData(rows: CleanDataOutput): Promise<StructuredData>
 function getMovingAverage(data: (number | null)[], windowSize: number) {
     const result: (number | null)[] = [];
     for (let i = 0; i < data.length; i++) {
+        if (data[i] !== null && data[i] !== undefined && !Number.isNaN(data[i])) {
+            result.push(data[i]);
+            continue;
+        }
+        
         let sum = 0;
         let count = 0;
         for (let j = Math.max(0, i - windowSize); j <= Math.min(data.length - 1, i + windowSize); j++) {
@@ -95,4 +100,37 @@ const getSlope = (data: (number | null)[]) => {
     return firstDerivative;
 }
 
-export { getStructuredData, getCleanData, getMovingAverage, getSlope };
+function getSmartMovingAverage(data: (number | null)[], windowSize: number, isSeries3: boolean = false) {
+    const result: (number | null)[] = [];
+
+    for (let i = 0; i < data.length; i++) {
+        // If the point exists and we're not processing series3, keep it as is
+        if (data[i] !== null && !isSeries3) {
+            result.push(data[i]);
+            continue;
+        }
+
+        // For series3 or missing points in series1/2, calculate moving average
+        let sum = 0;
+        let count = 0;
+        for (let j = Math.max(0, i - windowSize); j <= Math.min(data.length - 1, i + windowSize); j++) {
+            const value = data[j];
+            if (value !== null && value !== undefined && !Number.isNaN(value)) {
+                sum += value;
+                count++;
+            }
+        }
+        
+        // For series3, always apply moving average
+        if (isSeries3) {
+            result.push(count > 0 ? Math.round((sum / count) * 100) / 100 : null);
+        } 
+        // For series1/2, only apply moving average if the point is missing
+        else {
+            result.push(data[i] !== null ? data[i] : (count > 0 ? Math.round((sum / count) * 100) / 100 : null));
+        }
+    }
+    return result;
+}
+
+export { getStructuredData, getCleanData, getMovingAverage, getSlope, getSmartMovingAverage };

@@ -42,7 +42,7 @@ export default function GraphReadBox({ handlePointData, handleGraphData }: Graph
                         <span>ตอน อายุ {xAxis} ปี</span>
                     </div>
                 </div>
-                <h2 className='text-center font-starcansay text-5xl mb-4 mt-20  md:mt-0'>{`"${LifeStar(graphData, xAxis)?.title}"`}</h2>
+                <h2 className='text-center font-starcansay text-4xl mb-4 mt-20  md:mt-0'>{`"${LifeStar(graphData, xAxis)?.title}"`}</h2>
                 <p id='lifestar-wording' className='text-center font-ibm-plex-sans-thai text-3xl'>
                     <b>ดาวชีวิตกำลังอยู่ใน{LifeStar(graphData, xAxis)?.wording}</b>
                 </p>

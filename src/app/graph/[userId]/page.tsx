@@ -11,7 +11,6 @@ import AgeDropDown from '@/components/dropdown/AgeDropDown'
 import SummaryCardPureSkeleton from '@/components/card/summary-card-pure-skeleton'
 import { Button } from "@/components/ui/button"
 import { redirect } from "next/navigation"
-import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link'
 import Image from 'next/image'
 import { checkAdmin } from '@/lib/auth'
@@ -53,7 +52,7 @@ export default function UserGraphPage() {
 
 
   return (
-    <div className='w-full'>
+    <div className='w-full overflow-y-auto'>
       {/* Admin controls */}
       <div className="w-full flex justify-between items-center p-4 bg-starcansayblue text-white">
         <div className="flex items-center">
@@ -113,7 +112,7 @@ export default function UserGraphPage() {
         {/* Header with Title and Dropdown */}
         <div className='flex items-center mt-10 justify-center md:justify-between w-3/4'>
           <p className='md:ml-5 text-starcansayblue'>
-            <span className='text-5xl font-starcansay'>
+            <span className='text-2xl font-starcansay'>
               กราฟ 100 ปี ของผู้ใช้ {userId}
             </span>
             <br/>

@@ -5,7 +5,7 @@ export default function LuckStar (graphdata: any, xAxis: number) {
     let wording;
     let subWording;
     let description;
-    if (data >= -Math.floor((50*Math.sin(Math.PI/6))) && data <= 0){
+    if (data >= -Math.floor((100*Math.sin(Math.PI/6))) && data <= 0){
         if ((slope >= 0)){
             wording = 'ช่วงมีโชคด้านสุขภาพและงานประจำ';
             subWording = 'ตกด้านสุขภาพและงานประจำ';
@@ -16,7 +16,7 @@ export default function LuckStar (graphdata: any, xAxis: number) {
             description = 'เป็นช่วงที่เหมาะแก่การเสริมเสน่ห์ เพิ่มความมั่นใจในตัวเอง หาตัวตนหรือ Vibe ของเรา เร่ิมต้นสิ่งใหม่ ๆ ทั้งในเรื่องชีวิตส่วนตัวและอาชีพการงาน เช่นเริ่มต้นโครงการใหม่ หรือเริ่มพัฒนาตัวเอง';
         }
         
-    } else if (data >= -Math.floor((50*Math.sin(Math.PI/3))) && data < -Math.floor((50*Math.sin(Math.PI/6)))){
+    } else if (data >= -Math.floor((100*Math.sin(Math.PI/3))) && data < -Math.floor((100*Math.sin(Math.PI/6)))){
         if ((slope >= 0)){
             wording = 'ช่วงมีโชคด้านความรักและการสร้างสรรค์';
             subWording = 'ตกด้านความรักและการสร้างสรรค์';
@@ -27,7 +27,7 @@ export default function LuckStar (graphdata: any, xAxis: number) {
             description = 'เป็นช่วงที่เหมาะแก่การศึกษาเรื่องการลงทุน ซื้อขายทรัยพ์สิน ขยายธุรกิจ เพิ่มความมั่งคั่งให้กับตัวเอง';
         }
         
-    } else if (data >= -50 && data < -Math.floor((50*Math.sin(Math.PI/3)))){
+    } else if (data >= -100 && data < -Math.floor((100*Math.sin(Math.PI/3)))){
         if ((slope >= 0)){
             wording = 'ช่วงมีโชคด้านบ้านและครอบครัว';
             subWording = 'ตกด้านบ้านและครอบครัว';
@@ -38,7 +38,7 @@ export default function LuckStar (graphdata: any, xAxis: number) {
             description = 'เป็นช่วงที่เหมาะกับการเขียน การพูด การสอน หรือทำธุรกิจที่เกี่ยวข้องกับการสื่อสาร ให้ความรู้ เป็นช่วงที่มีโชคในการเดินทางสั้น ๆ หรือจากคนใกล้ตัวที่ให้ความรู้เรา อย่างคุณครู ญาติพี่น้อง';
         }
         
-    } else if (data >= 0 && data < Math.floor((50*Math.sin(Math.PI/6)))){
+    } else if (data >= 0 && data < Math.floor((100*Math.sin(Math.PI/6)))){
         if ((slope >= 0)){
             wording = 'ช่วงมีโชคด้านการแต่งงานและพาร์ทเนอร์';
             subWording = 'ตกด้านการแต่งงานและพาร์ทเนอร์';
@@ -49,7 +49,7 @@ export default function LuckStar (graphdata: any, xAxis: number) {
             description = 'เป็นช่วงที่ทบทวนตัวเองได้ดี เหมาะกับการใช้เวลาทำสมาธิ การปลีกตัวเพื่อพัฒนาจิตวิญญาณ และทำงานเบื้องหลัง สะสมประสบการณ์ เพื่อประสบความสำเร็จในอนาคต';
         }
         
-    } else if (data >= Math.floor((50*Math.sin(Math.PI/6))) && data < Math.floor((50*Math.sin(Math.PI/3)))){
+    } else if (data >= Math.floor((100*Math.sin(Math.PI/6))) && data < Math.floor((100*Math.sin(Math.PI/3)))){
         if ((slope >= 0)){
             wording = 'ช่วงมีโชคด้านการเปลี่ยนแปลง';
             subWording = 'ตกด้านการเปลี่ยนแปลง';
@@ -60,7 +60,7 @@ export default function LuckStar (graphdata: any, xAxis: number) {
             description = 'เป็นช่วงที่ทำงานร่วมกับผู้อื่นได้ดี รายล้อมไปด้วยผู้คน เพื่อน มิตรภาพ และการทำงานร่วมกับกลุ่มคนที่มีเป้าหมายเดียวกัน เหมาะกับการร่วมมือกับเพื่อนร่วมงาน หรือรวมตัวคนที่มีความฝันร่วมกัน';
         }
         
-    } else if (data >= Math.floor((50*Math.sin(Math.PI/3))) && data <= 50){
+    } else if (data >= Math.floor((100*Math.sin(Math.PI/3))) && data <= 100){
         if ((slope >= 0)){
             wording = 'ช่วงมีโชคด้านปรัชญาและการเดินทางไกล';
             subWording = 'ตกด้านปรัชญาและการเดินทางไกล';
