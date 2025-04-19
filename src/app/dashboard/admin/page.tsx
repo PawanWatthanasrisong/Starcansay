@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from "@/components/ui/button"
-import { redirect } from "next/navigation"
+import { redirect, useRouter } from "next/navigation"
 import { Loader2, Eye } from "lucide-react"
 import { useToast } from "@/components/hooks/use-toast"
 import { checkAdmin } from '@/lib/auth'
@@ -14,6 +14,7 @@ interface SheetData {
 }
 
 export default function AdminPage() {
+  const router = useRouter();
   const [sheets, setSheets] = useState<SheetData[]>([])
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(true)
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({})
@@ -25,7 +26,7 @@ export default function AdminPage() {
       const data = await response.json()
       setSheets(data)
     } catch (error) {
-      console.error('Failed to fetch sheets:', error)
+    console.error('Failed to fetch sheets:', error)
       toast({
         title: "Error",
         description: "Failed to fetch sheets data",
@@ -145,7 +146,7 @@ export default function AdminPage() {
                         variant="outline" 
                         className="flex items-center text-starcansayblue border-starcansayblue hover:bg-starcansayblue hover:text-white"
                         onClick={() => {
-                          window.location.href = `/graph/${encodeURIComponent(sheet.email)}`
+                          router.push(`/graph/${encodeURIComponent(sheet.email)}`)
                         }}
                       >
                         <Eye className="mr-2 h-4 w-4" />

@@ -2,7 +2,7 @@ import GoogleSignInButton from "@/components/ui/GoogleSignInButton";
 import Image from "next/image";
 export default function Home() {
   return (
-    <div className="w-full h-screen flex flex-col justify-center items-center bg-starcansayblue">
+    <div className="w-full h-[calc(100vh-49px)] flex flex-col justify-center items-center bg-starcansayblue">
       <div className="flex flex-col items-center bg-white rounded-3xl px-7 py-10 w-fit md:w-[553px] lg:w-[746px] mx-5">
         <Image src="/images/sticker-starcansay-web-29-3.png" alt="starcansay-logo" className="max-h-[179px]" width={253} height={179}/>
         <div className="text-5xl font-bold font-body mt-5 flex flex-col items-center w-full">

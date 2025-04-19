@@ -186,8 +186,8 @@ export default function LineGraph({ onPointData, onGraphData, handlePointData, o
                 verticalAlign='top'
                 height={50}
                 iconType="square" 
-                iconSize={20}
-                formatter={(value) => <span style={{ color: '#4E6AB3' }} className='mr-10'>{value}</span>}
+                iconSize={width >= 768 ? 20 : 10}
+                formatter={(value) => <span style={{ color: '#4E6AB3' }} className='mr-0 md:mr-10'>{value}</span>}
                 align='left'
               />
               <Tooltip content={<CustomTooltip payload={tooltipData?.activePayload ?? []} />} active={isActive && !isMobile()} cursor={{ stroke: '#F4AACA', strokeWidth: 4 }}/>

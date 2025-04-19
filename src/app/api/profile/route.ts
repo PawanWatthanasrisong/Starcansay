@@ -34,8 +34,8 @@ export async function GET(req: NextRequest) {
         const validBirthDate = birthdate ? thaiBirthdate(birthdate) : null;
         const validBirthTime = birthdate ? thaiBirthTime(birthdate) : null;
 
-        // Calculate age
-        const age = response.birthdate ? new Date().getFullYear() - response.birthdate.getFullYear() : null;
+        // Calculate age considering months and days
+        const age = birthdate ? calculateAge(birthdate) : null;
 
         // Parse chart data if it exists
         let chartData = null;
@@ -57,6 +57,17 @@ export async function GET(req: NextRequest) {
     } finally {
         await prisma.$disconnect();
     }
+}
+
+const calculateAge = (birthDate: Date): number => {
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
 }
 
 const thaiBirthdate = (birthDate: Date): string | null => {

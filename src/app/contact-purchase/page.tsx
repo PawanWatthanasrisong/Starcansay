@@ -5,7 +5,7 @@ import Image from 'next/image';
 export default function ContactPurchase() {
   return (
     <div className='w-full'>
-      <div className='flex flex-col h-screen bg-starcansayblue justify-center items-center font-thai text-base md:text-xl text-white text-center'>
+      <div className='flex flex-col h-[calc(100vh-49px)] bg-starcansayblue justify-center items-center font-thai text-base md:text-xl text-white text-center'>
           <Image src='/images/star-charactor-41.png' alt='starcansay-logo' className='w-[268px]' width={268} height={268} />
           <p>ขออภัย ขณะนี้ไม่สามารถแสดงข้อมูลของคุณได้</p>
           <p>

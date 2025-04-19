@@ -30,12 +30,12 @@ export default function SummaryCardPure({ name, status, lifeStar, luckStar, chal
         <Card className='flex flex-col w-full h-full rounded-3xl' >
             <CardHeader>
                 <CardTitle className='text-center flex flex-col items-center'>
-                    <Image src="/images/starcansaylogo-31.png" width={144} height={144} alt="starcansay logo"/>
+                    <img src="/images/starcansaylogo-31.png" id="starcansay-logo" width={144} height={144} alt="starcansay logo"/>
                     <p className='font-starcansay text-starcansaypink text-[40px] lg:text-[32px]'>
                       {name}
                     </p>
                     {lifeStar.img_url && (
-                      <Image src={lifeStar.img_url} width={295} height={295} alt="starcansay caractor"/>
+                      <img src={lifeStar.img_url} id="starcansay-character" width={295} height={295} alt="starcansay caractor"/>
                     )}
                 </CardTitle>
             </CardHeader>
@@ -61,7 +61,7 @@ export default function SummaryCardPure({ name, status, lifeStar, luckStar, chal
               <br/>
               <div className='grid grid-cols-2 gap-2'>
                 <div className='grid grid-cols-2 gap-2 col-span-1'>
-                  <Image src="/images/star-charactor-43.png" width={85.6} height={85.6} className='col-span-1' alt="starcansay sticker"/>
+                  <img src="/images/star-charactor-43.png" id="starcansay-luck" width={85.6} height={85.6} className='col-span-1' alt="starcansay sticker"/>
                   <div className='col-span-1 -ml-3 content-center'>
                     <p className='text-starcansayblue font-ibm-plex-sans-thai text-[12px] font-bold'>ดาวโชค</p>
                     <p className='text-starcansayblue font-thai text-[10px] font-medium leading-[13px]'>
@@ -70,7 +70,7 @@ export default function SummaryCardPure({ name, status, lifeStar, luckStar, chal
                   </div>
                 </div>
                 <div className='grid grid-cols-2 gap-2 col-span-1'>
-                  <Image src="/images/star-charactor-41.png" width={85.6} height={85.6} className='col-span-1' alt="starcansay sticker"/>
+                  <img src="/images/star-charactor-41.png" id="starcansay-challenge" width={85.6} height={85.6} className='col-span-1' alt="starcansay sticker"/>
                   <div className='col-span-1 -ml-3 content-center'>
                     <p className='text-starcansayblue font-ibm-plex-sans-thai text-[12px] font-bold'>ดาวท้าทาย</p>
                     <p className='text-starcansayblue font-thai text-[10px] font-medium align-middle leading-[13px]'>

@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { checkAdmin } from '@/lib/auth';
-import { commonColors } from '@nextui-org/theme';
+import prisma from '@/lib/prisma';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
@@ -24,10 +24,9 @@ const supabase = createClient(
 export async function POST(req: Request) {
   try {
     // Verify the requester is an admin
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session?.user.user_metadata.role !== 'admin') {
-          return NextResponse.json({ message: 'Unauthorized'}, { status: 401});
+    const isAdmin = await checkAdmin();
+    if (!isAdmin) {
+      return NextResponse.json({ message: 'Unauthorized'}, { status: 401});
     }
 
     const { targetUserEmail, action } = await req.json();
@@ -36,34 +35,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 });
     }
 
-    // Get the target user
-    const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers();
-    if (getUserError) {
-      throw getUserError;
-    }
+    // Update user's isAdmin status in the database
+    const updatedUser = await prisma.user.update({
+      where: { email: targetUserEmail },
+      data: { isAdmin: action === 'grant' },
+      select: { email: true, isAdmin: true }
+    });
 
-    const targetUser = users.find(user => user.email === targetUserEmail);
-    if (!targetUser) {
+    if (!updatedUser) {
       return NextResponse.json({ error: 'Target user not found' }, { status: 404 });
-    }
-
-    // Update user metadata
-    const { data, error } = await supabase.auth.admin.updateUserById(
-      targetUser.id,
-      { 
-        user_metadata: { 
-          role: action === 'grant' ? 'admin' : null
-        }
-      }
-    );
-
-    if (error) {
-      throw error;
     }
 
     return NextResponse.json({ 
       message: `Admin role ${action}ed for user ${targetUserEmail}`,
-      user: data.user 
+      user: updatedUser 
     });
 
   } catch (error) {

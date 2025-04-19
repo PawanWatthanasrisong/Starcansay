@@ -13,7 +13,7 @@ interface AgeDropDownProps{
 }
 
 export default function AgeDropDown({ handlePointData, onPointData}: AgeDropDownProps) {
-  const [age, setAge] = useState('25');
+  const [age, setAge] = useState("");
   
   const handleAgeChange = useCallback((newAge: string) => {
     setAge(newAge);

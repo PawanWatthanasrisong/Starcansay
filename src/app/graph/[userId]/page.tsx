@@ -17,21 +17,23 @@ import { checkAdmin } from '@/lib/auth'
 export default function UserGraphPage() {
   const params = useParams()
   const userId = decodeURIComponent(params.userId as string)
-  const [pointData, setPointData] = useState<number>(25)
+  const [pointData, setPointData] = useState<number>(0)
   const [graphData, setGraphData] = useState<GraphData | null>(null)
   const [isGraphLoading, setIsGraphLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const { userData, isUserDataLoading } = useUserData(userId)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const { userData, isUserDataLoading, error } = useUserData(userId)
   
   const summaryCardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const checkAdminStatus = async () => {
       setIsLoading(true)
-      const isAdmin = await checkAdmin();
-      if (!isAdmin) {
+      const adminStatus = await checkAdmin();
+      if (!adminStatus) {
         redirect('/graph');
       }
+      setIsAdmin(adminStatus)
       setIsLoading(false)
     };
     
@@ -50,6 +52,16 @@ export default function UserGraphPage() {
     setIsGraphLoading(isLoading)
   }
 
+  if (error) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600">Error</h1>
+          <p className="mt-2">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='w-full overflow-y-auto'>
@@ -68,7 +80,7 @@ export default function UserGraphPage() {
       </div>
       
       {/* User info section (blue background) */}
-      <div className='flex flex-col h-fit bg-starcansayblue justify-center items-center font-body md:flex-row md:items-start w-full md:min-h-screen'>
+      <div className='flex flex-col h-fit bg-starcansayblue justify-center items-center font-body md:flex-row md:items-start w-full md:min-h-fit'>
         <div className='mt-20 md:mt-28 flex flex-col text-white lg:mr-20 md:mr-10 items-center md:items-start'>
           <Image src="/images/sticker-starcansay-web-29-3.png" alt="starcansay sticker" width='253' height='179' className='md:-ml-11'/>
           {userData?.name && userData?.age ? (
@@ -123,27 +135,29 @@ export default function UserGraphPage() {
         </div>
 
         {/* Graph and ReadBox Section */}
-        <section className='flex flex-col items-center mt-10 w-full'>
-          <div className='relative w-full'>
-            <LineGraph 
-              onPointData={handlePointData} 
-              onGraphData={handleGraphData} 
-              handlePointData={pointData || 25}
+        {userData && (
+          <section className='flex flex-col items-center mt-10 w-full'>
+            <div className='relative w-full'>
+              <LineGraph 
+                onPointData={handlePointData} 
+                onGraphData={handleGraphData} 
+                handlePointData={pointData || userData.age}
               onLoadingChange={handleGraphLoadingChange}
               userEmail={userId}
             />
             {!isGraphLoading && (
               <div className='absolute top-4 right-[15%]'>
-                <AgeDropDown handlePointData={pointData || 25} onPointData={handlePointData}/>
+                <AgeDropDown handlePointData={pointData || userData?.age} onPointData={handlePointData}/>
               </div>
             )}
           </div>
 
           {/* Graph ReadBox */}
           <div className='mb-5 w-full mx-5'>
-            <GraphReadBox handlePointData={pointData || 25} handleGraphData={graphData as GraphData} />
-          </div>
-        </section>
+              <GraphReadBox handlePointData={pointData || userData?.age} handleGraphData={graphData as GraphData} />
+            </div>
+          </section>
+        )}
       </main>
     </div>
   )

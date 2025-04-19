@@ -7,14 +7,21 @@ export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ userId: string }> }
 ) {
-    
+   
     const supabase = await createClient();
     const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session?.user.user_metadata.role !== 'admin') {
-          return NextResponse.json({ message: 'Unauthorized'}, { status: 401});
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ isAdmin: false });
     }
 
+    const caller = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!caller?.isAdmin) {
+        return NextResponse.json({ message: 'Unauthorized'}, { status: 401});
+    }
 
     const { userId } = await params;
 

@@ -1,44 +1,18 @@
 import { createClient } from '@/utils/supabase/client';
 import { NextResponse } from 'next/server';
 
+// For client-side components
 export async function checkAdmin() {
   try {
-    const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session?.user) {
-      return false;
-    }
-
-    // First check user metadata for admin role
-    if (session.user.user_metadata?.role === 'admin') {
-      return true;
-    }
-
-    return false;
+    // Check if we're in a browser environment
+    const isBrowser = typeof window !== 'undefined';
+    const baseUrl = isBrowser ? '' : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     
-  } catch (error) {
-    console.error('Error checking admin status:', error);
-    return false;
-  }
-}
-
-export async function checkAdminServer() {
-  try {
-    const supabase = await createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session?.user) {
-      return false;
-    }
-
-    // First check user metadata for admin role
-    if (session.user.user_metadata?.role === 'admin') {
-      return true;
-    }
-
-    return false;
-    
+    const response = await fetch(`${baseUrl}/api/auth/check-admin`, {
+      method: 'GET',
+    });
+    const data = await response.json();
+    return data.isAdmin;
   } catch (error) {
     console.error('Error checking admin status:', error);
     return false;

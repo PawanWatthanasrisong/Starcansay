@@ -36,41 +36,38 @@ export default function GraphReadBox({ handlePointData, handleGraphData }: Graph
   return (
     <div className='w-full flex flex-col items-center font-thai justify-center mt-5 text-base sm:text-lg'>
         <Card className='w-full  border-4 rounded-3xl border-starcansayblue bg-starcansayblue-background text-starcansayblue relative'>
-            <CardContent className='mt-5'>
+            <CardContent className='mt-5 flex flex-col items-center gap-3'>
                 <div className='absolute top-3 left-2 right-2 flex justify-center md:justify-start'>
                     <div className='w-fit font-bold font-starcansay text-2xl rounded-lg px-2 py-2 bg-white'>
                         <span>ตอน อายุ {xAxis} ปี</span>
                     </div>
                 </div>
-                <h2 className='text-center font-starcansay text-4xl mb-4 mt-20  md:mt-0'>{`"${LifeStar(graphData, xAxis)?.title}"`}</h2>
-                <p id='lifestar-wording' className='text-center font-ibm-plex-sans-thai text-3xl'>
+                <h2 className='text-center font-starcansay text-4xl mt-14  md:mt-0'>{`"${LifeStar(graphData, xAxis)?.title}"`}</h2>
+                <p id='lifestar-wording' className='text-center font-ibm-plex-sans-thai text-xl md:text-xl'>
                     <b>ดาวชีวิตกำลังอยู่ใน{LifeStar(graphData, xAxis)?.wording}</b>
                 </p>
-                <br/>
-                <p id='lifestar-description'>
+                <p id='lifestar-description' className='text-base'>
                     {LifeStar(graphData, xAxis)?.description}
                 </p>
             </CardContent>
         </Card>
         <div className='flex flex-col md:flex-row w-full mt-3'>
             <Card className='w-full md:w-1/2 md:mr-3 border-4 border-starcansaygreen bg-starcansaygreen-background rounded-3xl text-starcansayblue'>
-                <CardContent className='mt-5'>
-                    <p id='lifestar-wording' className='text-center font-starcansay text-3xl'>
+                <CardContent className='flex flex-col items-center mt-5 gap-3'>
+                    <p id='lifestar-wording' className='text-center font-starcansay text-xl md:text-xl'>
                         <b>{LuckStar(graphData, xAxis)?.wording}</b>
                     </p>
-                    <br/>
-                    <p id='lifestar-description'>
+                    <p id='lifestar-description' className='text-base'>
                         {LuckStar(graphData, xAxis)?.description}
                     </p>
                 </CardContent>
             </Card>
-            <Card className='w-full md:w-1/2 mt-5 md:mt-0 border-4 border-starcansayred bg-starcansayred-background rounded-3xl text-starcansayblue'>
-                <CardContent className='mt-5'>
-                    <p id='lifestar-wording' className='text-center font-starcansay text-3xl'>
+            <Card className='w-full md:w-1/2 mt-3 md:mt-0 border-4 border-starcansayred bg-starcansayred-background rounded-3xl text-starcansayblue'>
+                <CardContent className='flex flex-col items-center mt-5 gap-3'>
+                    <p id='lifestar-wording' className='text-center font-starcansay text-xl md:text-xl'>
                         <b>{ChallengeStar(graphData, xAxis)?.wording}</b>
                     </p>
-                    <br/>
-                    <p id='lifestar-description'>
+                    <p id='lifestar-description' className='text-base'>
                         {ChallengeStar(graphData, xAxis)?.description}
                     </p>
                 </CardContent>

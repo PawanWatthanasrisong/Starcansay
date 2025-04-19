@@ -45,13 +45,37 @@ export async function downloadImage(element: HTMLElement | null) {
 
   try {
     const dataUrl = await captureElement(element)
-    
-    const link = document.createElement('a')
-    link.download = `starcansay-${Date.now()}.png`
-    link.href = dataUrl
-    link.click()
+    const filename = `starcansay-${Date.now()}.png`
+
+    // For Safari, we need to use a different approach
+    if (navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome')) {
+      const iframe = document.createElement('iframe')
+      iframe.style.display = 'none'
+      document.body.appendChild(iframe)
+      
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document
+      if (iframeDoc) {
+        const link = iframeDoc.createElement('a')
+        link.href = dataUrl
+        link.download = filename
+        iframeDoc.body.appendChild(link)
+        link.click()
+        iframeDoc.body.removeChild(link)
+      }
+      
+      setTimeout(() => {
+        document.body.removeChild(iframe)
+      }, 1000)
+    } else {
+      const link = document.createElement('a')
+      link.download = filename
+      link.href = dataUrl
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
   } catch (error) {
-    console.error('Error generating image:', error)
+    console.error('Error downloading image:', error)
     throw error
   }
 }
@@ -63,33 +87,38 @@ export async function shareToInstagram(element: HTMLElement | null) {
 
   try {
     const dataUrl = await captureElement(element)
-    
-    // Convert data URL to blob
     const response = await fetch(dataUrl)
     const blob = await response.blob()
-    
-    // Create file from blob
-    const file = new File([blob], 'starcansay.png', { type: 'image/png' })
+    const filename = `starcansay-${Date.now()}.png`
+    const file = new File([blob], filename, { type: 'image/png' })
 
     // Check if Web Share API is supported
     if (navigator.share && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        files: [file],
-        title: 'My Starcansay Graph',
-        text: 'Check out my life graph from Starcansay!'
-      })
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'My Starcansay Graph',
+          text: 'Check out my life graph from Starcansay!'
+        })
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          return // User cancelled the share
+        }
+        throw error
+      }
     } else {
-      // Fallback for browsers that don't support sharing files
+      // Fallback to download if sharing is not supported
       const blobUrl = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = blobUrl
-      link.download = 'starcansay.png'
+      link.download = filename
+      document.body.appendChild(link)
       link.click()
+      document.body.removeChild(link)
       URL.revokeObjectURL(blobUrl)
-      console.warn('Web Share API not supported')
     }
   } catch (error) {
-    console.error('Error generating image for sharing:', error)
+    console.error('Error sharing image:', error)
     throw error
   }
-} 
+}
