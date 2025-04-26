@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getStructuredData, getCleanData, getMovingAverage, getSlope, getSmartMovingAverage } from './utils/calculateData';
 import { randomUUID } from 'crypto';
 import prisma from '@/lib/prisma';
+import { getCredentials } from '@/config/credentials';
 
 interface ProcessedData {
   xAxis: (number | null)[];
@@ -18,9 +19,8 @@ export async function POST(req: Request) {
   try {
     const { sheetEmail } = await req.json();
 
-    // Initialize Google Sheets API
     const auth = new google.auth.GoogleAuth({
-      keyFile: process.env.GOOGLE_CREDENTIALS,
+      credentials: getCredentials(),
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
 

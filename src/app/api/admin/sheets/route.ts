@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
-
+import { getCredentials } from '@/config/credentials';
 export async function GET() {
   try {
     const auth = new google.auth.GoogleAuth({
-      keyFile: process.env.GOOGLE_CREDENTIALS,
+      credentials: getCredentials(),
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     })
 
