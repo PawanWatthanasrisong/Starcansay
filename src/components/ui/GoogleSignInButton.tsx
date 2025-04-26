@@ -1,5 +1,6 @@
 'use client'
-import { FC, ReactNode, useState } from 'react'
+import {useState } from 'react'
+import type { FC, ReactNode } from 'react'
 import { Button } from './button'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/utils/supabase/client'
@@ -19,12 +20,15 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
     try {
       setIsLoading(true)
       const supabase = createClient()
-        await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {  
-            redirectTo: `http://localhost:3000/graph`,
-          },
-        })
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+
+      if (error) throw error
     } catch (error) {
       console.error('Error:', error)
     } finally {

@@ -1,11 +1,27 @@
 import { NextResponse } from "next/server";
+import { createClient } from '@/utils/supabase/server';
 import type { NextRequest } from "next/server";
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 
-const prisma = new PrismaClient();
+export async function GET(
+    req: NextRequest, 
+    { params }: { params: Promise<{ userId: string }> }
+) {
+    const supabase = await createClient();
+    const { data: { session } } = await supabase.auth.getSession();
 
+    if (!session?.user?.email) {
+      return NextResponse.json({ isAdmin: false });
+    }
 
-export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
+    const caller = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!caller?.isAdmin) {
+        return NextResponse.json({ message: 'Unauthorized'}, { status: 401});
+    }
+
     const { userId } = await params;
     try {
         const response = await prisma.user.findUnique({
@@ -19,8 +35,7 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
         const validBirthDate = birthdate ? thaiBirthdate(birthdate) : null;
         const validBirthTime = birthdate ? thaiBirthTime(birthdate) : null;
 
-        // Calculate age
-        const age = response.birthdate ? new Date().getFullYear() - response.birthdate.getFullYear() : null;
+        const age = birthdate ? calculateAge(birthdate) : null;
 
         return NextResponse.json({ name, validBirthDate, validBirthTime, birthplace, age }, { status: 200 });
     } catch (error) {
@@ -30,6 +45,18 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
         await prisma.$disconnect();
     }
 }
+
+const calculateAge = (birthDate: Date): number => {
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
+}
+
 
 const thaiBirthdate = (birthDate: Date): string | null => {
     if (!birthDate) return null; // Return null if birthDate is not provided
@@ -45,6 +72,5 @@ const thaiBirthTime = (birthDate: Date): string | null => {
     if (!birthDate) return null;
     const birthTime = birthDate.toISOString().split('T')[1];
     const [hour, minute] = birthTime.split(':');
-    console.log(hour, minute);
     return `${hour}:${minute}`;
 }

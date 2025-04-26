@@ -1,8 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
 import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
-import { getStructuredData, getCleanData, getMovingAverage, getSlope } from './utils/calculateData';
+import { getStructuredData, getCleanData, getMovingAverage, getSlope, getSmartMovingAverage } from './utils/calculateData';
 import { randomUUID } from 'crypto';
+import prisma from '@/lib/prisma';
+import { getCredentials } from '@/config/credentials';
 
 interface ProcessedData {
   xAxis: (number | null)[];
@@ -14,17 +15,12 @@ interface ProcessedData {
   slopeSeries3: { x: number; slope: number | null }[];
 }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
-
 export async function POST(req: Request) {
+  try {
     const { sheetEmail } = await req.json();
 
-    // Initialize Google Sheets API
     const auth = new google.auth.GoogleAuth({
-      keyFile: 'credentials.json',
+      credentials: getCredentials(),
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
 
@@ -34,7 +30,7 @@ export async function POST(req: Request) {
     const [graphRawData, userRawData] = await Promise.all([
       sheets.spreadsheets.values.get({
         spreadsheetId: process.env.GOOGLE_SHEET_ID,
-        range: `${sheetEmail}!A:D`,
+        range: `${sheetEmail}!A2:D`,
       }),
       sheets.spreadsheets.values.get({
         spreadsheetId: process.env.GOOGLE_SHEET_ID,
@@ -45,13 +41,13 @@ export async function POST(req: Request) {
 
     const graphRows = graphRawData.data.values || [];
     const userRows = userRawData.data.values || [];
+
+
     if (!Array.isArray(graphRows) || graphRows.length === 0 || !Array.isArray(userRows) || userRows.length === 0) {
       throw new Error('Invalid or empty data');
     }
 
     userRows[2][1] = convertSerialToDate(userRows[2][1]);
-
-    console.log(userRows);
 
     const useData = {
       name: userRows[0][1],
@@ -60,17 +56,31 @@ export async function POST(req: Request) {
     }
 
     const cleanGraphRows = getCleanData(graphRows);
+
     const structuredData = await getStructuredData(cleanGraphRows);
 
+    // Apply smart moving average based on series characteristics
+    const smoothedSeries1 = getSmartMovingAverage(structuredData.series1, 3);
+    const smoothedSeries2 = getSmartMovingAverage(structuredData.series2, 3);
+    const smoothedSeries3 = getSmartMovingAverage(structuredData.series3, 3, true);
+
     const processedData = {
-      ...structuredData,
-      slopeSeries1: getSlope(structuredData.series1),
-      slopeSeries2: getSlope(structuredData.series2),
-      series3: getMovingAverage(structuredData.series3, 1),
-      slopeSeries3: getSlope(structuredData.series3),
+      xAxis: structuredData.xAxis,
+      series1: smoothedSeries1,
+      series2: smoothedSeries2,
+      series3: smoothedSeries3,
+      slopeSeries1: getSlope(smoothedSeries1),
+      slopeSeries2: getSlope(smoothedSeries2),
+      slopeSeries3: getSlope(smoothedSeries3),
     }
+
     const result = await updateToSupabase(processedData, sheetEmail, useData.name, useData.birthDate, useData.birthPlace)
+
     return NextResponse.json({result}, { status: 200 });
+  } catch (error) {
+    console.error('Error processing sheet data:', error);
+    return NextResponse.json({ error: 'Failed to process sheet data' }, { status: 500 });
+  }
 }
 
 const convertSerialToDate = (serial: number) => {
@@ -79,19 +89,29 @@ const convertSerialToDate = (serial: number) => {
 };
 
 async function updateToSupabase(processedData: ProcessedData, sheetEmail: string, name: string, birthDate: string, birthPlace: string) {
-  const { data, error } = await supabase
-    .from('User')
-    .upsert({
-      id: randomUUID(),
-      email: sheetEmail,
-      data: processedData,
-      name: name,
-      birthdate: birthDate,
-      birthplace: birthPlace,
-      updatedAt: new Date().toISOString()
-    })
-    .select();
+  try {
+    const { data } = await prisma.user.upsert({
+      where: { email: sheetEmail },
+      update: {
+        data: JSON.stringify(processedData),
+        name: name,
+        birthdate: birthDate,
+        birthplace: birthPlace,
+        updatedAt: new Date().toISOString()
+      },
+      create: {
+        id: randomUUID(),
+        email: sheetEmail,
+        data: JSON.stringify(processedData),
+        name: name,
+        birthdate: birthDate,
+        birthplace: birthPlace,
+      }
+    });
 
-  if (error) throw error;
-  return data;
+    return data;
+  } catch (error) {
+    console.error('Error updating database:', error);
+    throw error;
+  }
 }

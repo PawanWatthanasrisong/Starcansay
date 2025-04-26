@@ -1,11 +1,33 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
+import { createClient } from "@/utils/supabase/server";
 
-const prisma = new PrismaClient();
+export async function GET(
+    request: NextRequest,
+    { params }: { params: Promise<{ userId: string }> }
+) {
+   
+    const supabase = await createClient();
+    const { data: { session } } = await supabase.auth.getSession();
 
-export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
+    if (!session?.user?.email) {
+      return NextResponse.json({ isAdmin: false });
+    }
+
+    const caller = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!caller?.isAdmin) {
+        return NextResponse.json({ message: 'Unauthorized'}, { status: 401});
+    }
+
     const { userId } = await params;
+
+    if (!userId) {
+        return NextResponse.json({ message: 'User ID is required' }, { status: 400 });
+    }
 
     try {
         const response = await prisma.user.findUnique({

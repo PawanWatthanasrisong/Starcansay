@@ -1,11 +1,10 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from "@/components/ui/button"
-import { redirect } from "next/navigation"
-import { Loader2 } from "lucide-react"
+import { redirect, useRouter } from "next/navigation"
+import { Loader2, Eye } from "lucide-react"
 import { useToast } from "@/components/hooks/use-toast"
-import { createClient } from '@/utils/supabase/client';
-import { Session } from '@supabase/supabase-js'
+import { checkAdmin } from '@/lib/auth'
 
 interface SheetData {
   id: string
@@ -15,46 +14,46 @@ interface SheetData {
 }
 
 export default function AdminPage() {
+  const router = useRouter();
   const [sheets, setSheets] = useState<SheetData[]>([])
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true)
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({})
-  const [user, setUser] = useState<Session | null>(null);
   const { toast } = useToast()
 
-  const supabase = createClient();
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session || session.user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-        redirect('/graph')
-      }
-      setUser(session)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  useEffect(() => {
-    fetchSheets()
-  }, [])
-
-  const fetchSheets = async () => {
+  const fetchSheets = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/sheets')
       const data = await response.json()
       setSheets(data)
     } catch (error) {
-      console.error('Failed to fetch sheets:', error)
+    console.error('Failed to fetch sheets:', error)
       toast({
         title: "Error",
         description: "Failed to fetch sheets data",
         variant: "destructive",
       })
     }
-  }
+  }, [toast])
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      setIsCheckingAdmin(true)
+      const isAdmin = await checkAdmin();
+      if (!isAdmin) {
+        redirect('/graph');
+      }
+      setIsCheckingAdmin(false)
+    };
+
+    fetchSession();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchSheets();
+    };
+    fetchData();
+  }, [fetchSheets]);
 
   const updateSheet = async (sheetEmail: string) => {
     setLoading(prev => ({ ...prev, [sheetEmail]: true }))
@@ -66,8 +65,6 @@ export default function AdminPage() {
         },
         body: JSON.stringify({ sheetEmail }),
       })
-
-      console.log(response);
 
       if (!response.ok) {
         throw new Error('Failed to update sheet')
@@ -81,10 +78,10 @@ export default function AdminPage() {
 
       toast({
         title: "Success",
+        variant: "default",
         description: "Sheet data updated successfully",
       })
       
-      await fetchSheets()
     } catch (error) {
       console.error('Failed to update sheet:', error)
       toast({
@@ -102,10 +99,14 @@ export default function AdminPage() {
     }
   }
 
+  if (isCheckingAdmin) {
+    return <div className="container mx-auto p-6 mt-10">Checking permissions...</div>
+  }
+
   return (
-    <div className="container mx-auto p-6 mt-10">
-      <h1 className="text-3xl font-bold mb-6 font-thai">Admin Dashboard</h1>
-      
+    <div className="w-full h-screen overflow-y-auto">
+      <div className="container mx-auto p-6">
+        <h1 className="text-3xl font-bold font-thai">Admin Dashboard</h1>
       <div className="bg-white rounded-lg shadow">
         <div className="p-6">
           <div className="overflow-x-auto">
@@ -114,8 +115,8 @@ export default function AdminPage() {
                 <tr className="border-b">
                   <th className="text-left p-3 font-thai">Sheet ID (Email)</th>
                   <th className="text-left p-3 font-thai">Last Updated</th>
-                  <th className="text-left p-3 font-thai">Status</th>
                   <th className="text-left p-3 font-thai">Update Data</th>
+                  <th className="text-left p-3 font-thai">Preview Graph</th>
                 </tr>
               </thead>
               <tbody>
@@ -124,20 +125,11 @@ export default function AdminPage() {
                     <td className="p-3 font-thai">{sheet.email}</td>
                     <td className="p-3 font-thai">{new Date(sheet.lastUpdated).toLocaleString()}</td>
                     <td className="p-3">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        sheet.status === 'success' ? 'bg-green-100 text-green-800' :
-                        sheet.status === 'error' ? 'bg-red-100 text-red-800' :
-                        sheet.status === 'done' ? 'bg-blue-100 text-blue-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {sheet.status}
-                      </span>
-                    </td>
-                    <td className="p-3">
                       <Button
                         onClick={() => updateSheet(sheet.email)}
                         disabled={loading[sheet.id]}
-                        className="font-thai"
+                        variant="outline"
+                        className="font-thai text-starcansayblue border-starcansayblue hover:bg-starcansayblue hover:text-white"
                       >
                         {loading[sheet.id] ? (
                           <>
@@ -149,12 +141,25 @@ export default function AdminPage() {
                         )}
                       </Button>
                     </td>
+                    <td className="p-3">
+                      <Button 
+                        variant="outline" 
+                        className="flex items-center text-starcansayblue border-starcansayblue hover:bg-starcansayblue hover:text-white"
+                        onClick={() => {
+                          router.push(`/graph/${encodeURIComponent(sheet.email)}`)
+                        }}
+                      >
+                        <Eye className="mr-2 h-4 w-4" />
+                        Preview
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )

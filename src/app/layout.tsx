@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next";
 import { Inter, Kanit } from "next/font/google";
 import "./globals.css";
@@ -23,12 +22,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en"> 
         <body className={inter.className}>
-          <Navbar/>
-          <main>
-            {children}
-          </main>
+          <div className="flex flex-col min-h-screen">
+            <Navbar/>
+            <div className="flex-1 overflow-auto">
+              {children}
+            </div>
+          </div>
           <Toaster/>
           </body>
     </html>

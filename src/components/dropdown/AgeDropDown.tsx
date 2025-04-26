@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import {
     Select,
     SelectContent,
@@ -13,16 +13,16 @@ interface AgeDropDownProps{
 }
 
 export default function AgeDropDown({ handlePointData, onPointData}: AgeDropDownProps) {
-  const [age, setAge] = useState('25');
-
-  useEffect(() => {
-    handleAgeChange(handlePointData.toString());
-  },[handlePointData])
-
-  const handleAgeChange = (newAge: string) => {
+  const [age, setAge] = useState("");
+  
+  const handleAgeChange = useCallback((newAge: string) => {
     setAge(newAge);
     onPointData(Number.parseInt(newAge));
-  }
+  }, [onPointData]);
+
+  useEffect(() => {
+    handleAgeChange(String(handlePointData));
+  }, [handlePointData, handleAgeChange]);
 
   return (
     <div className='flex items-center'>
