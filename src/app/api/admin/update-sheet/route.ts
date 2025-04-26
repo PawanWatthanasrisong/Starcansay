@@ -20,7 +20,7 @@ export async function POST(req: Request) {
 
     // Initialize Google Sheets API
     const auth = new google.auth.GoogleAuth({
-      keyFile: 'credentials.json',
+      keyFile: process.env.GOOGLE_CREDENTIALS,
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
 
