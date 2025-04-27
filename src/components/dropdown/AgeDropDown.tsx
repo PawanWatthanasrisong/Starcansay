@@ -27,10 +27,10 @@ export default function AgeDropDown({ handlePointData, onPointData}: AgeDropDown
   return (
     <div className='flex items-center'>
       <Select onValueChange={handleAgeChange} value={age}>
-        <SelectTrigger className="w-fit bg-starcansayblue text-white font-bold font-starcansay text-xl gap-2">
+        <SelectTrigger className="w-fit bg-starcansayblue text-white font-bold font-starcansay px-1 py-1 gap-1 text-sm sm:text-xl sm:px-2 sm:gap-2">
             <SelectValue defaultValue={age}>{age} ปี</SelectValue>
         </SelectTrigger>
-        <SelectContent className='bg-starcansayblue text-white font-bold font-starcansay text-xl'>
+        <SelectContent className='bg-starcansayblue text-white font-bold font-starcansay text-sm md:text-xl'>
           {
               Array.from({ length: 99}, (_, i) => {
                   const age = i + 1;
