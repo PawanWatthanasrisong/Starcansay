@@ -36,12 +36,9 @@ export default function ShareButtons({
 
   const handleShare = async () => {
     try {
-      setIsSharing(true)
       await shareToInstagram(summaryCardRef.current)
     } catch (error) {
       console.error('Failed to share image:', error)
-    } finally {
-      setIsSharing(false)
     }
   }
 
@@ -63,13 +60,10 @@ export default function ShareButtons({
       <button
         type="button"
         onClick={handleShare}
-        disabled={isSharing || isDataLoading || !hasData}
+        disabled={ isDataLoading || !hasData}
         className="disabled:opacity-50 relative group"
         title={isMobileDevice ? "Share to Instagram" : "Share (works best on mobile)"}
       >
-        {isSharing ? (
-          <Loader2 className='text-white animate-spin' />
-        ) : (
           <>
             <Share2 className='text-white'/>
             {!isMobileDevice && (
@@ -78,7 +72,6 @@ export default function ShareButtons({
               </span>
             )}
           </>
-        )}
       </button>
     </div>
   )

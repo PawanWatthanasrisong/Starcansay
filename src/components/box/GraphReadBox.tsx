@@ -42,9 +42,10 @@ export default function GraphReadBox({ handlePointData, handleGraphData }: Graph
                         <span>ตอน อายุ {xAxis} ปี</span>
                     </div>
                 </div>
-                <h2 className='text-center font-starcansay text-4xl mt-14  md:mt-0'>{`"${LifeStar(graphData, xAxis)?.title}"`}</h2>
-                <p id='lifestar-wording' className='text-center font-ibm-plex-sans-thai text-xl md:text-xl'>
-                    <b>ดาวชีวิตกำลังอยู่ใน{LifeStar(graphData, xAxis)?.wording}</b>
+                <h2 className='text-center font-starcansay text-3xl mt-14 md:text-4xl md:mt-0'>{`"${LifeStar(graphData, xAxis)?.title}"`}</h2>
+                <p id='lifestar-wording' className='text-center font-bold font-ibm-plex-sans-thai text-xl'>
+                    <span>ดาวชีวิตกำลังอยู่ใน</span>
+                    <span className="whitespace-nowrap">{LifeStar(graphData, xAxis)?.wording}</span>
                 </p>
                 <p id='lifestar-description' className='text-base'>
                     {LifeStar(graphData, xAxis)?.description}
@@ -54,21 +55,23 @@ export default function GraphReadBox({ handlePointData, handleGraphData }: Graph
         <div className='flex flex-col md:flex-row w-full mt-3'>
             <Card className='w-full md:w-1/2 md:mr-3 border-4 border-starcansaygreen bg-starcansaygreen-background rounded-3xl text-starcansayblue'>
                 <CardContent className='flex flex-col items-center mt-5 gap-3'>
-                    <p id='lifestar-wording' className='text-center font-starcansay text-xl md:text-xl'>
-                        <b>{LuckStar(graphData, xAxis)?.wording}</b>
+                    <p id='lifestar-wording' className='text-center font-starcansay text-xl'>
+                        <span>ช่วงมีโชคด้าน</span>
+                        <span className="whitespace-nowrap">{LuckStar(graphData, xAxis)?.wording}</span>
                     </p>
                     <p id='lifestar-description' className='text-base'>
-                        {LuckStar(graphData, xAxis)?.description}
+                        <span>{LuckStar(graphData, xAxis)?.description}</span>
                     </p>
                 </CardContent>
             </Card>
             <Card className='w-full md:w-1/2 mt-3 md:mt-0 border-4 border-starcansayred bg-starcansayred-background rounded-3xl text-starcansayblue'>
                 <CardContent className='flex flex-col items-center mt-5 gap-3'>
-                    <p id='lifestar-wording' className='text-center font-starcansay text-xl md:text-xl'>
-                        <b>{ChallengeStar(graphData, xAxis)?.wording}</b>
+                    <p id='lifestar-wording' className='text-center font-starcansay text-xl'>
+                        <span>ช่วงมีความท้าทายด้าน</span>
+                        <span className="whitespace-nowrap">{ChallengeStar(graphData, xAxis)?.wording}</span>
                     </p>
                     <p id='lifestar-description' className='text-base'>
-                        {ChallengeStar(graphData, xAxis)?.description}
+                        <span>{ChallengeStar(graphData, xAxis)?.description}</span>
                     </p>
                 </CardContent>
             </Card>

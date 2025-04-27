@@ -3,15 +3,22 @@ import * as htmlToImage from 'html-to-image'
 const captureElement = async (element: HTMLElement): Promise<string> => {
   // First ensure all images are loaded
   const images = Array.from(element.getElementsByTagName('img'))
-  await Promise.all(images.map(img => {
+  
+  // Create a promise for each image to load
+  const imageLoadPromises = images.map(img => {
     if (img.complete) {
       return Promise.resolve()
     }
-    return new Promise((resolve, reject) => {
-      img.addEventListener('load', resolve)
-      img.addEventListener('error', reject)
+    return new Promise<void>((resolve, reject) => {
+      img.addEventListener('load', () => resolve())
+      img.addEventListener('error', () => reject())
+      // Add a timeout to prevent infinite waiting
+      setTimeout(() => resolve(), 5000)
     })
-  }))
+  })
+
+  // Wait for all images to load
+  await Promise.all(imageLoadPromises)
 
   // Convert Next.js Image components to regular img elements for capture
   for (const img of images) {
@@ -23,6 +30,9 @@ const captureElement = async (element: HTMLElement): Promise<string> => {
       img.srcset = ''
     }
   }
+
+  // Add a small delay to ensure all images are rendered
+  await new Promise<void>(resolve => setTimeout(resolve, 100))
 
   // Capture the element
   return await htmlToImage.toPng(element, {

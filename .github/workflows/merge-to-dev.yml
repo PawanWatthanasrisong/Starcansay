@@ -1,0 +1,24 @@
+name: Merge main to dev
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: sync main to dev'
+          branch: main-to-dev-sync
+          title: 'Sync main into dev'
+          body: 'Auto-created PR to sync main changes into dev after hotfix.'
+          base: dev
+          delete-branch: true
